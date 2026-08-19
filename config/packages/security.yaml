@@ -5,7 +5,10 @@ security:
 
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
-        users_in_memory: { memory: null }
+        app_comptes:
+            entity:
+                class: App\Entity\Compte
+                property: email
 
     firewalls:
         dev:
@@ -14,18 +17,25 @@ security:
             security: false
         main:
             lazy: true
-            provider: users_in_memory
+            provider: app_comptes
 
-            # Activate different ways to authenticate:
-            # https://symfony.com/doc/current/security.html#the-firewall
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                enable_csrf: true
+                default_target_path: app_home
+
+            logout:
+                path: app_logout
+                target: app_home
 
             # https://symfony.com/doc/current/security/impersonating_user.html
             # switch_user: true
 
     # Note: Only the *first* matching rule is applied
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/equipes/creer, roles: ROLE_USER }
+        - { path: ^/equipes/publier, roles: ROLE_USER }
 
 when@test:
     security:

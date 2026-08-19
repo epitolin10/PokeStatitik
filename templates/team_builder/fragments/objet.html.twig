@@ -1,0 +1,38 @@
+<div class="modal-card" data-modal-target="card">
+    <a href="{{ path('app_team_builder_slot', { position: position }) }}" class="modal-card__close" data-action="click->modal#close">✕</a>
+    <h1 class="modal-card__title">Choix de l'objet</h1>
+    <p class="modal-card__subtitle">Veuillez choisir l'objet que le Pokémon doit porter</p>
+
+    <form action="{{ path('app_team_builder_choose_objet', { position: position }) }}" data-action="change->modal#submitGet" class="modal-filters">
+        <div class="modal-search">
+            <input type="search" name="q" value="{{ query }}" placeholder="Nom de l'objet" data-action="keydown.enter->modal#submitGet">
+            <svg width="16" height="16" viewBox="0 0 18 18" fill="none"><circle cx="8" cy="8" r="6.5" stroke="white" stroke-width="1.5"/><path d="M17 17L13 13" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+    </form>
+
+    <div class="data-table">
+        <div class="data-table__scroll">
+            <div class="data-table__head is-item">
+                <span></span>
+                <span>Objets</span>
+                <span>Effet</span>
+                <span></span>
+            </div>
+            {% for item in items %}
+                <form method="post" action="{{ path('app_team_builder_set_objet', { position: position }) }}" class="data-table__row is-item">
+                    {% if item.sprite %}
+                        <img class="data-table__icon" src="{{ item.sprite }}" alt="" loading="lazy">
+                    {% else %}
+                        <span class="data-table__cell--dim">•</span>
+                    {% endif %}
+                    <input type="hidden" name="objet" value="{{ item.name }}">
+                    <span class="data-table__name">{{ item.name }}</span>
+                    <span class="data-table__effect">{{ item.effect }}</span>
+                    <button type="submit" class="btn btn--primary">Ajouter</button>
+                </form>
+            {% else %}
+                <p style="padding: 24px; text-align: center; color: var(--color-text-muted);">Aucun objet ne correspond à « {{ query }} ».</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>

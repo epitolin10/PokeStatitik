@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Création de l'équipe — PokeStatitik{% endblock %}
+
+{% block body %}
+    {% include 'partials/_header.html.twig' %}
+
+    <main data-controller="modal">
+        <section class="usage-page container">
+            <h1 class="section__title" style="text-align:center; margin-bottom: 32px;">Création de l'équipe</h1>
+
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <p class="auth-error" style="max-width: 700px; margin: 0 auto 24px;">{{ message }}</p>
+                {% endfor %}
+            {% endfor %}
+
+            <div class="team-builder-page">
+                {% include 'team_builder/fragments/slot_list.html.twig' %}
+
+                <div class="team-info-card">
+                    <h2>Information sur l'équipe :</h2>
+                    <form method="post" action="{{ path('app_team_builder_info') }}" style="display: contents;">
+                        <label>Titre :
+                            <input type="text" name="titre" value="{{ draft.titre }}" maxlength="255" required>
+                        </label>
+                        <label>Description :
+                            <textarea name="description" rows="5">{{ draft.description }}</textarea>
+                        </label>
+                        <label>ID équipe Pokémon Champions :
+                            <input type="text" name="idEquipeChampions" value="{{ draft.idEquipePokemonChampions }}" maxlength="20">
+                        </label>
+                        <label>Tiers :
+                            <select name="tiersId">
+                                <option value="">— Choisir —</option>
+                                {% for tiers in tiersList %}
+                                    <option value="{{ tiers.id }}" {{ draft.tiersId == tiers.id ? 'selected' }}>{{ tiers.nomTiers }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                        <button type="submit" class="btn btn--primary">Enregistrer</button>
+                        <button type="submit" formaction="{{ path('app_team_builder_publish') }}" class="btn btn--primary" style="width: 100%;">Publier l'équipe</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <div class="modal-overlay" data-modal-target="backdrop">
+            <div data-modal-target="content"></div>
+        </div>
+    </main>
+
+    {% include 'partials/_footer.html.twig' %}
+{% endblock %}

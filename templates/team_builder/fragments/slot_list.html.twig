@@ -1,0 +1,23 @@
+{# Shared left column of the team builder: 6 numbered slot rows. Params: slots, activePosition (optional) #}
+<div class="builder-list">
+    {% for position in 1..6 %}
+        {% set slot = slots[position] %}
+        <div class="builder-slot-row{{ activePosition is defined and activePosition == position ? ' is-active' }}">
+            <span class="builder-slot-row__badge">{{ position }}</span>
+            {% if slot %}
+                <a href="{{ path('app_team_builder_slot', { position: position }) }}" class="builder-slot-row__main">
+                    <img class="builder-slot-row__sprite" src="{{ champions_asset(slot.pokemon.summary.sprite) }}" alt="{{ slot.pokemon.name }}">
+                    <span class="builder-slot-row__name">{{ pokemon_name_fr(slot.pokemon.name) }}</span>
+                </a>
+                <form method="post" action="{{ path('app_team_builder_slot_remove', { position: position }) }}" onsubmit="return confirm('Retirer ce Pokémon de l\'équipe ?');">
+                    <button type="submit" class="builder-slot-row__remove" aria-label="Retirer">✕</button>
+                </form>
+            {% else %}
+                <a href="{{ path('app_team_builder_choose_pokemon', { position: position }) }}" class="builder-slot-row__main" data-action="click->modal#open">
+                    <span class="builder-slot-row__placeholder">{% include 'partials/_logo.html.twig' with { uid: 'builder-slot-' ~ position } %}</span>
+                    <span class="builder-slot-row__name builder-slot-row__name--empty">Ajouter un Pokémon</span>
+                </a>
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>

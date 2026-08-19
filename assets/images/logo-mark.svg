@@ -1,0 +1,25 @@
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="logo-mark" aria-hidden="true">
+  <defs>
+    <clipPath id="ball-clip">
+      <circle cx="46" cy="50" r="34" />
+    </clipPath>
+  </defs>
+
+  <g class="logo-mark__accent logo-mark__accent--top">
+    <path d="M4 4H22L13 20L4 4Z" fill="#39FF88" transform="rotate(180 13 12)" />
+  </g>
+  <g class="logo-mark__accent logo-mark__accent--bottom">
+    <path d="M70 80H88L79 96L70 80Z" fill="#FF3D71" />
+  </g>
+
+  <g clip-path="url(#ball-clip)">
+    <rect x="12" y="16" width="68" height="34" fill="#7B2FF7" />
+    <rect x="12" y="50" width="68" height="34" fill="#3A3450" />
+    <rect x="12" y="46" width="68" height="8" fill="#16121F" />
+  </g>
+  <circle class="logo-mark__ring" cx="46" cy="50" r="34" stroke="#16121F" stroke-width="4" />
+
+  <circle cx="46" cy="50" r="14" fill="#16121F" />
+  <circle class="logo-mark__button" cx="46" cy="50" r="11" fill="#39FF88" />
+  <circle cx="46" cy="50" r="5.5" fill="#FF3D71" />
+</svg>

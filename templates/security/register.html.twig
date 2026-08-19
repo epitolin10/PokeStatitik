@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Créer un compte — PokeStatitik{% endblock %}
+
+{% block body %}
+    {% include 'partials/_header.html.twig' %}
+
+    <main>
+        <section class="auth-page container">
+            <form method="post" class="auth-card">
+                <h1 class="section__title">Créer un compte</h1>
+
+                {% if errors %}
+                    <ul class="auth-error">
+                        {% for error in errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                <label class="auth-field">
+                    <span>Pseudo</span>
+                    <input type="text" name="pseudo" minlength="3" maxlength="32" required>
+                </label>
+
+                <label class="auth-field">
+                    <span>Email</span>
+                    <input type="email" name="email" required>
+                </label>
+
+                <label class="auth-field">
+                    <span>Mot de passe</span>
+                    <input type="password" name="password" minlength="8" required>
+                </label>
+
+                <label class="auth-field">
+                    <span>Confirmer le mot de passe</span>
+                    <input type="password" name="password_confirm" minlength="8" required>
+                </label>
+
+                <button type="submit" class="btn btn--primary auth-submit">Créer mon compte</button>
+
+                <p class="auth-switch">Déjà un compte ? <a href="{{ path('app_login') }}">Se connecter</a></p>
+            </form>
+        </section>
+    </main>
+
+    {% include 'partials/_footer.html.twig' %}
+{% endblock %}

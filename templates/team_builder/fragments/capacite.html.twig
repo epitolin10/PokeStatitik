@@ -1,0 +1,52 @@
+<div class="modal-card" data-modal-target="card">
+    <a href="{{ path('app_team_builder_slot', { position: position }) }}" class="modal-card__close" data-action="click->modal#close">✕</a>
+    <h1 class="modal-card__title">Choix de la capacité</h1>
+    <p class="modal-card__subtitle">Veuillez choisir la capacité que le Pokémon doit apprendre</p>
+
+    <form action="{{ path('app_team_builder_choose_capacite', { position: position, slotIndex: slotIndex }) }}" data-action="change->modal#submitGet" class="modal-filters">
+        <div class="modal-search">
+            <input type="search" name="q" value="{{ query }}" placeholder="Nom de la capacité" data-action="keydown.enter->modal#submitGet">
+            <svg width="16" height="16" viewBox="0 0 18 18" fill="none"><circle cx="8" cy="8" r="6.5" stroke="white" stroke-width="1.5"/><path d="M17 17L13 13" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <select name="type" class="modal-select">
+            <option value="">Tous les types</option>
+            {% for type in availableTypes %}
+                <option value="{{ type }}" {{ selectedType == type ? 'selected' }}>{{ type_name_fr(type|capitalize) }}</option>
+            {% endfor %}
+        </select>
+    </form>
+
+    <div class="data-table">
+        <div class="data-table__scroll">
+            <div class="data-table__head is-move">
+                <span>Type</span>
+                <span>Nom</span>
+                <span>Catégorie</span>
+                <span>Puissance</span>
+                <span>PP</span>
+                <span>Précision</span>
+                <span></span>
+            </div>
+            {% for move in moves %}
+                <form method="post" action="{{ path('app_team_builder_set_capacite', { position: position, slotIndex: slotIndex }) }}" class="data-table__row is-move">
+                    <input type="hidden" name="capacite" value="{{ move.name }}">
+                    <img class="data-table__icon" src="{{ asset(type_icon(move.type|capitalize)) }}" alt="{{ move.type }}">
+                    <span class="data-table__name">{{ move.name }}</span>
+                    <span class="data-table__cell--dim">{{ move_category_fr(move.damageClass) }}</span>
+                    <span class="data-table__cell--dim">{{ move.power ?? '-' }}</span>
+                    <span class="data-table__cell--dim">{{ move.pp ?? '-' }}</span>
+                    <span class="data-table__cell--dim">{{ move.accuracy ? move.accuracy ~ ' %' : '-' }}</span>
+                    <button type="submit" class="btn btn--primary">Ajouter</button>
+                </form>
+            {% else %}
+                <p style="padding: 24px; text-align: center; color: var(--color-text-muted);">
+                    {% if query or selectedType %}
+                        Aucune capacité ne correspond à ces critères.
+                    {% else %}
+                        Aucune capacité trouvée pour ce Pokémon.
+                    {% endif %}
+                </p>
+            {% endfor %}
+        </div>
+    </div>
+</div>

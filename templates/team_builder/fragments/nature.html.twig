@@ -1,0 +1,39 @@
+<div class="modal-card" data-modal-target="card">
+    <a href="{{ path('app_team_builder_slot', { position: position }) }}" class="modal-card__close" data-action="click->modal#close">✕</a>
+    <h1 class="modal-card__title">Choix de la nature</h1>
+    <p class="modal-card__subtitle">Veuillez choisir la nature du Pokémon</p>
+
+    <div class="nature-grid-wrap">
+        <div>
+            <p class="nature-grid__legend">
+                <span class="stat-arrow stat-arrow--up">▲</span> Statistique augmentée (ligne)
+                &nbsp;·&nbsp;
+                <span class="stat-arrow stat-arrow--down">▼</span> Statistique diminuée (colonne)
+            </p>
+            <table class="nature-grid">
+                <tr>
+                    <th style="background: transparent;"></th>
+                    {% for statKey, statLabel in stats %}
+                        <th class="is-down-header"><span class="stat-arrow stat-arrow--down">▼</span> {{ statLabel }}</th>
+                    {% endfor %}
+                </tr>
+                {% for rowKey, rowLabel in stats %}
+                    <tr>
+                        <th class="is-up-header"><span class="stat-arrow stat-arrow--up">▲</span> {{ rowLabel }}</th>
+                        {% for colKey in stats|keys %}
+                            {% set natureKey = grid[rowKey][colKey] ?? null %}
+                            <td>
+                                {% if natureKey %}
+                                    <form method="post" action="{{ path('app_team_builder_set_nature', { position: position }) }}">
+                                        <input type="hidden" name="nature" value="{{ natureKey }}">
+                                        <button type="submit">{{ natures[natureKey].name }}</button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,9 @@
+{% extends 'base.html.twig' %}
+{% block title %}Choix du Pokémon — PokeStatitik{% endblock %}
+{% block body %}
+    {% include 'partials/_header.html.twig' %}
+    <div class="modal-page">
+        {% include 'team_builder/fragments/pokemon.html.twig' %}
+    </div>
+    {% include 'partials/_footer.html.twig' %}
+{% endblock %}

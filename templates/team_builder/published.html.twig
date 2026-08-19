@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ equipe.titre }} — PokeStatitik{% endblock %}
+
+{% block body %}
+    {% include 'partials/_header.html.twig' %}
+
+    <main>
+        <section class="usage-page container" style="max-width: 1300px; margin: 0 auto;">
+            {% for message in app.flashes('success') %}
+                <p class="auth-error" style="background-color: rgba(57,255,136,0.12); border-color: var(--color-up); color: var(--color-up); max-width: none; text-align: center;">
+                    {{ message }}
+                </p>
+            {% endfor %}
+
+            <h1 class="section__title" style="text-align:center;">{{ equipe.titre }}</h1>
+            {% if equipe.description %}<p class="section__subtitle" style="text-align:center;">{{ equipe.description }}</p>{% endif %}
+            <p style="text-align:center; color: var(--color-text-muted); font-family: var(--font-body); margin-top: 8px;">Par {{ equipe.compte.pseudo }}</p>
+            <p style="text-align:center; color: var(--color-primary-light); font-family: var(--font-title); margin-top: 4px;">{{ equipe.tiers.nomTiers }}</p>
+
+            <div class="team-detail-grid">
+                {% for entry in slots %}
+                    {% include 'team_builder/fragments/pokemon_summary_card.html.twig' with {
+                        pokemon: entry.pokemon,
+                        build: entry.build,
+                        natures: natures,
+                        moveTypes: entry.moveTypes,
+                    } %}
+                {% endfor %}
+            </div>
+
+            <div style="text-align:center; margin-top: 32px;">
+                <a href="{{ path('app_team_builder') }}" class="btn btn--primary">Créer une autre équipe</a>
+            </div>
+        </section>
+    </main>
+
+    {% include 'partials/_footer.html.twig' %}
+{% endblock %}

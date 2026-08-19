@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Équipes — PokeStatitik{% endblock %}
+
+{% block body %}
+    {% include 'partials/_header.html.twig' %}
+
+    <main>
+        <section class="section container">
+            <div class="section__header-row">
+                <div>
+                    <h1 class="section__title">Équipes</h1>
+                    <p class="section__subtitle">Toutes les équipes partagées par la communauté</p>
+                </div>
+                <a href="{{ path('app_team_builder') }}" class="btn btn--primary">Créer une équipe</a>
+            </div>
+
+            {% include 'partials/_team_list.html.twig' with { teams: teams } %}
+        </section>
+    </main>
+
+    {% include 'partials/_footer.html.twig' %}
+{% endblock %}

@@ -1,0 +1,34 @@
+<div class="modal-card" data-modal-target="card">
+    <a href="{{ path('app_team_builder') }}" class="modal-card__close" data-action="click->modal#close">✕</a>
+    <h1 class="modal-card__title">Choix du Pokémon</h1>
+    <p class="modal-card__subtitle">Veuillez choisir le Pokémon</p>
+
+    <form action="{{ path('app_team_builder_choose_pokemon', { position: position }) }}" data-action="change->modal#submitGet" class="modal-filters">
+        <div class="modal-search">
+            <input type="search" name="q" value="{{ query }}" placeholder="Nom du Pokémon" data-action="keydown.enter->modal#submitGet">
+            <svg width="16" height="16" viewBox="0 0 18 18" fill="none"><circle cx="8" cy="8" r="6.5" stroke="white" stroke-width="1.5"/><path d="M17 17L13 13" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+    </form>
+
+    <div class="data-table">
+        <div class="data-table__scroll">
+            {% for pokemon in pokemonList %}
+                <form method="post" action="{{ path('app_team_builder_set_pokemon', { position: position }) }}" class="data-table__row is-pokemon">
+                    <input type="hidden" name="slug" value="{{ pokemon.slug }}">
+                    <img class="data-table__sprite" src="{{ champions_asset(pokemon.summary.sprite) }}" alt="" loading="lazy">
+                    <div>
+                        <div class="data-table__name">{{ pokemon_name_fr(pokemon.name) }}</div>
+                        <div class="data-table__meta">
+                            {% for type in pokemon.summary.types %}
+                                <span class="type-pill"><img src="{{ asset(type_icon(type)) }}" alt="">{{ type_name_fr(type)|upper }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn--primary">Ajouter</button>
+                </form>
+            {% else %}
+                <p style="padding: 24px; text-align: center; color: var(--color-text-muted);">Aucun Pokémon ne correspond à « {{ query }} ».</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>

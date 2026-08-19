@@ -1,0 +1,148 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PokeStatitik — La référence du compétitif Pokémon Champions{% endblock %}
+
+{% block body %}
+    {% include 'partials/_header.html.twig' %}
+
+    <main>
+        <section class="hero container">
+            <div class="hero__inner">
+                {% include 'partials/_logo.html.twig' with { class: 'hero__logo', animate: true, uid: 'hero' } %}
+                <h1 class="hero__title">
+                    Bienvenue dans <span class="accent">PokeStatitik</span>,
+                    la <span class="accent--pink">référence</span> dans le compétitif de Pokémon Champions
+                </h1>
+            </div>
+        </section>
+
+        <section class="section container" id="usage">
+            <div class="section__header">
+                <h2 class="section__title">Usage des Pokémons</h2>
+                <p class="section__subtitle">Tier des usages des Pokémons de la méta actuelle</p>
+            </div>
+
+            <div class="usage-cards">
+                <a href="{{ path('app_usage') }}" class="usage-card">
+                    <h3 class="usage-card__title">Champions <span class="accent">Duo</span></h3>
+                    <div class="usage-card__mons">
+                        <img src="{{ asset('images/usage/duo-carchacrok.png') }}" alt="Carchacrok" style="left:0; top:0; width:125px; height:131px;">
+                        <img src="{{ asset('images/usage/duo-felinferno.png') }}" alt="Félinferno" style="left:140px; top:-7px; width:69px; height:127px;">
+                        <img src="{{ asset('images/usage/duo-theffroyable.png') }}" alt="Théffroyable" style="left:112px; top:88px; width:68px; height:97px;">
+                        <img src="{{ asset('images/usage/duo-dracaufeu-y.png') }}" alt="Méga-Dracaufeu Y" style="left:209px; top:19px; width:130px; height:106px;">
+                    </div>
+                    <span class="link-arrow usage-card__link">Voir le classement →</span>
+                </a>
+
+                <a href="{{ path('app_usage') }}" class="usage-card">
+                    <h3 class="usage-card__title">Champions <span class="accent--pink">solo</span></h3>
+                    <div class="usage-card__mons">
+                        <img src="{{ asset('images/usage/solo-mimiqui.png') }}" alt="Mimiqui" style="left:223px; top:9px; width:73px; height:92px;">
+                        <img src="{{ asset('images/usage/solo-pondralugon.png') }}" alt="Pondralugon" style="left:122px; top:-8px; width:104px; height:126px;">
+                        <img src="{{ asset('images/usage/solo-goupelin.png') }}" alt="Méga-Goupelin" style="left:37px; top:75px; width:121px; height:136px;">
+                        <img src="{{ asset('images/usage/solo-miascarade.png') }}" alt="Miascarade" style="left:0; top:1px; width:98px; height:123px;">
+                    </div>
+                    <span class="link-arrow usage-card__link">Voir le classement →</span>
+                </a>
+            </div>
+        </section>
+
+        <section class="section container" id="equipes">
+            <div class="section__header">
+                <h2 class="section__title">Équipes</h2>
+                <p class="section__subtitle">Créer votre équipe et la partager avec la communauté</p>
+            </div>
+
+            <div class="team-builder">
+                <div class="team-slot">
+                    <div class="team-slot__art">
+                        <img class="sprite" src="{{ asset('images/team/etouraptor.png') }}" alt="Étouraptor">
+                        <img class="team-slot__item" src="{{ asset('images/team/item-etouraptorite.png') }}" alt="">
+                    </div>
+                    <p class="team-slot__name">Étouraptor</p>
+                    <div class="team-slot__types">
+                        <img src="{{ asset('images/team/type-normal.png') }}" alt="Normal">
+                        <img src="{{ asset('images/team/type-vol.png') }}" alt="Vol">
+                    </div>
+                </div>
+
+                <div class="team-slot">
+                    <div class="team-slot__art">
+                        <img class="sprite" src="{{ asset('images/team/farfaduvet.png') }}" alt="Farfaduvet">
+                        <img class="team-slot__item" src="{{ asset('images/team/item-ceinture-force.png') }}" alt="">
+                    </div>
+                    <p class="team-slot__name">Farfaduvet</p>
+                    <div class="team-slot__types">
+                        <img src="{{ asset('images/team/type-plante.png') }}" alt="Plante">
+                        <img src="{{ asset('images/team/type-fee.png') }}" alt="Fée">
+                    </div>
+                </div>
+
+                {% for i in 1..4 %}
+                    <a href="{{ path('app_team_builder') }}" class="team-slot team-slot--empty">
+                        <div class="team-slot__art">
+                            {% include 'partials/_logo.html.twig' with { uid: 'slot' ~ i } %}
+                        </div>
+                        <p class="team-slot__name">Ajouter</p>
+                    </a>
+                {% endfor %}
+            </div>
+
+            <div class="team-builder-actions">
+                <a href="{{ path('app_team_builder') }}" class="btn btn--primary">Partager son équipe</a>
+            </div>
+
+            {% include 'partials/_team_list.html.twig' with { teams: recentTeams } %}
+
+            <div class="team-builder-actions">
+                <a href="{{ path('app_teams') }}" class="btn btn--primary">Voir les équipes</a>
+            </div>
+        </section>
+
+        <section class="section container" id="calculateur">
+            <div class="section__header-row">
+                <div>
+                    <h2 class="section__title">Calculateur de dégâts</h2>
+                    <p class="section__subtitle">Vérifier combien de dégâts inflige une attaque avant de la jouer</p>
+                </div>
+                <a href="{{ path('app_calculator') }}" class="btn btn--primary">Accéder</a>
+            </div>
+
+            <div class="calc-teaser">
+                <img class="calc-teaser__sprite" src="{{ asset('images/calculator/mega-laggron.png') }}" alt="Méga-Laggron">
+
+                <div class="calc-teaser__mon">
+                    <div class="calc-teaser__name-row">
+                        <span>Aquatacle</span>
+                        <img src="{{ asset('images/calculator/type-eau.png') }}" alt="Eau">
+                    </div>
+                    <div class="calc-teaser__bar-row">
+                        <span class="calc-teaser__label">Dégâts infligés</span>
+                        <div class="calc-teaser__bar-track">
+                            <div class="calc-teaser__bar-fill" style="width: 82%">82%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <span class="calc-teaser__vs">VS</span>
+
+                <div class="calc-teaser__mon">
+                    <div class="calc-teaser__name-row">
+                        <img src="{{ asset('images/calculator/type-psy.png') }}" alt="Psy">
+                        <span>Psycho</span>
+                    </div>
+                    <div class="calc-teaser__bar-row">
+                        <span class="calc-teaser__label">Dégâts infligés</span>
+                        <div class="calc-teaser__bar-track">
+                            <div class="calc-teaser__bar-fill" style="width: 47%">47%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <img class="calc-teaser__sprite" src="{{ asset('images/calculator/farigiraf.png') }}" alt="Farigiraf">
+            </div>
+        </section>
+    </main>
+
+    {% include 'partials/_footer.html.twig' %}
+{% endblock %}

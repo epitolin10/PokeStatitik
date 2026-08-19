@@ -1,0 +1,37 @@
+<footer class="site-footer">
+    <div class="container">
+        <div class="site-footer__top">
+            <div class="brand">
+                {% include 'partials/_logo.html.twig' with { class: 'brand__logo', uid: 'footer' } %}
+                <span class="brand__name">Poke<span>Statitik</span></span>
+            </div>
+
+            <div class="footer-col">
+                <h4>Usage Pokémon</h4>
+                <ul>
+                    <li><a href="{{ path('app_usage') }}">Voir les usages Duo</a></li>
+                    <li><a href="{{ path('app_usage') }}">Voir les usages solo</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Équipes</h4>
+                <ul>
+                    <li><a href="{{ path('app_team_builder') }}">Partager son équipe</a></li>
+                    <li><a href="{{ path('app_teams') }}">Trouver une équipe</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Calculateur</h4>
+                <ul>
+                    <li><a href="{{ path('app_calculator') }}">Accéder au calculateur de dégâts</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <p class="site-footer__legal">
+            PokeStatitik n'est pas affilié, sponsorisé ou approuvé par, ni associé de quelque manière que ce soit à Pokémon ou à The Pokémon Company International Inc. Pokémon et tous les noms respectifs sont des marques déposées. © Nintendo 1996-{{ "now"|date("Y") }}.
+        </p>
+    </div>
+</footer>

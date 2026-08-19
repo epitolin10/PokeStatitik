@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion — PokeStatitik{% endblock %}
+
+{% block body %}
+    {% include 'partials/_header.html.twig' %}
+
+    <main>
+        <section class="auth-page container">
+            <form method="post" class="auth-card">
+                <h1 class="section__title">Connexion</h1>
+
+                {% if error %}
+                    <p class="auth-error">{{ error.messageKey|trans(error.messageData, 'security') }}</p>
+                {% endif %}
+
+                <label class="auth-field">
+                    <span>Email</span>
+                    <input type="email" name="_username" value="{{ last_username }}" required autofocus>
+                </label>
+
+                <label class="auth-field">
+                    <span>Mot de passe</span>
+                    <input type="password" name="_password" required>
+                </label>
+
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                <button type="submit" class="btn btn--primary auth-submit">Se connecter</button>
+
+                <p class="auth-switch">Pas encore de compte ? <a href="{{ path('app_register') }}">Créer un compte</a></p>
+            </form>
+        </section>
+    </main>
+
+    {% include 'partials/_footer.html.twig' %}
+{% endblock %}

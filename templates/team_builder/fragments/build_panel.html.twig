@@ -1,0 +1,92 @@
+<div class="modal-card" data-modal-target="card">
+    <a href="{{ path('app_team_builder') }}" class="modal-card__close">✕</a>
+    <h1 class="modal-card__title">Entrainement du Pokémon</h1>
+    <p class="modal-card__subtitle">{{ pokemon_name_fr(pokemon.name) }}</p>
+
+    <div class="slot-config">
+        <div class="slot-config__identity">
+            <img class="slot-config__sprite" src="{{ champions_asset(pokemon.summary.sprite) }}" alt="{{ pokemon.name }}">
+            <h2 class="usage-detail__name">{{ pokemon_name_fr(pokemon.name) }}</h2>
+            <div class="type-pills">
+                {% for type in pokemon.summary.types %}
+                    <span class="type-pill"><img src="{{ asset(type_icon(type)) }}" alt="">{{ type_name_fr(type)|upper }}</span>
+                {% endfor %}
+            </div>
+
+            <div class="field-group" style="text-align: left; margin-top: 24px;">
+                <div class="field-group__label">Objet :</div>
+                <a href="{{ path('app_team_builder_choose_objet', { position: position }) }}" class="dropdown-btn" data-action="click->modal#open">
+                    <span class="dropdown-btn__left">{{ slot.objet ?: 'Aucun objet' }}</span>
+                    <span>▾</span>
+                </a>
+            </div>
+
+            <form method="post" action="{{ path('app_team_builder_slot_stats', { position: position }) }}" id="stats-form-{{ position }}" style="text-align: left;">
+                <div class="field-group">
+                    <div class="field-group__label">Talent :</div>
+                    <select name="talent" class="dropdown-btn" style="appearance: auto;">
+                        {% for ability in abilities %}
+                            <option value="{{ ability.name }}" {{ slot.talent == ability.name ? 'selected' }}>{{ ability.name }}{{ ability.isHidden ? ' (caché)' }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="field-group">
+                    <div class="field-group__label">Nature :</div>
+                    <a href="{{ path('app_team_builder_choose_nature', { position: position }) }}" class="dropdown-btn" data-action="click->modal#open">
+                        <span class="dropdown-btn__left">{{ slot.nature ? natures[slot.nature].name : 'Choisir une nature' }}</span>
+                        <span>▾</span>
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <div>
+            <div class="field-group">
+                <div class="field-group__label">Points de stats :</div>
+                <div class="stat-alloc-total"><span data-modal-target="statTotal">{{ slot.ivPv + slot.ivAtq + slot.ivDef + slot.ivAtqSpe + slot.ivDefSpe + slot.ivVitesse }}</span> / {{ constant('App\\Entity\\BuildPokemon::MAX_POINTS_TOTAL') }}</div>
+
+                {% set selectedNature = slot.nature ? natures[slot.nature] : null %}
+                {% set statFields = {
+                    'PV': { field: 'ivPv', natureKey: null },
+                    'Attaque': { field: 'ivAtq', natureKey: 'attaque' },
+                    'Défense': { field: 'ivDef', natureKey: 'defense' },
+                    'Atq Spé': { field: 'ivAtqSpe', natureKey: 'atqSpe' },
+                    'Déf Spé': { field: 'ivDefSpe', natureKey: 'defSpe' },
+                    'Vitesse': { field: 'ivVitesse', natureKey: 'vitesse' },
+                } %}
+                {% for label, meta in statFields %}
+                    <div class="stat-alloc-row">
+                        <span class="stat-alloc-row__label">
+                            {{ label }}
+                            {% if selectedNature and meta.natureKey and selectedNature.up == meta.natureKey %}
+                                <span class="stat-arrow stat-arrow--up" title="Augmentée par la nature">▲</span>
+                            {% elseif selectedNature and meta.natureKey and selectedNature.down == meta.natureKey %}
+                                <span class="stat-arrow stat-arrow--down" title="Diminuée par la nature">▼</span>
+                            {% endif %}
+                        </span>
+                        <div class="stat-alloc-row__track">
+                            <div class="stat-alloc-row__fill" data-modal-target="statFill" style="width: {{ (slot[meta.field] / 32 * 100)|number_format(0) }}%;"></div>
+                            <input type="range" min="0" max="32" step="2" name="{{ meta.field }}" value="{{ slot[meta.field] }}" form="stats-form-{{ position }}" data-modal-target="statInput" data-action="input->modal#refreshStats">
+                        </div>
+                        <span class="stat-alloc-row__value" data-modal-target="statValue">{{ slot[meta.field] }}</span>
+                    </div>
+                {% endfor %}
+
+                <button type="submit" form="stats-form-{{ position }}" class="btn btn--primary" style="width: 100%; margin-top: 12px;">Enregistrer les points de stats</button>
+            </div>
+
+            <div class="field-group" style="margin-top: 28px;">
+                <div class="field-group__label">Capacités :</div>
+                <div class="moves-grid">
+                    {% for i in 1..4 %}
+                        <a href="{{ path('app_team_builder_choose_capacite', { position: position, slotIndex: i }) }}" class="dropdown-btn" data-action="click->modal#open">
+                            <span class="dropdown-btn__left">{{ slot['capacite' ~ i] ?: 'Capacité ' ~ i }}</span>
+                            <span>▾</span>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

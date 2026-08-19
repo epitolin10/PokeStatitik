@@ -1,0 +1,59 @@
+{# Read-only Pokémon build card for the published team page. Params: pokemon, build, natures, moveTypes #}
+{% set selectedNature = build.nature and natures[build.nature] is defined ? natures[build.nature] : null %}
+<div class="team-detail-card">
+    <div class="team-detail-card__identity">
+        <img class="team-detail-card__sprite" src="{{ champions_asset(pokemon.summary.sprite) }}" alt="{{ pokemon.name }}">
+        <div class="team-detail-card__name">{{ pokemon_name_fr(pokemon.name) }}</div>
+        <div class="type-pills">
+            {% for type in pokemon.summary.types %}
+                <span class="type-pill"><img src="{{ asset(type_icon(type)) }}" alt="">{{ type_name_fr(type)|upper }}</span>
+            {% endfor %}
+        </div>
+        <p class="team-detail-card__meta">
+            <strong>Objet :</strong> {{ build.objet ?: 'Aucun objet' }}<br>
+            <strong>Talent :</strong> {{ build.talent }}<br>
+            <strong>Nature :</strong> {{ selectedNature ? selectedNature.name : '—' }}
+        </p>
+    </div>
+
+    <div>
+        <div class="team-detail-card__stats-label">Points de stats :</div>
+        {% set statFields = {
+            'PV': { value: build.ivPv, natureKey: null },
+            'Attaque': { value: build.ivAtq, natureKey: 'attaque' },
+            'Défense': { value: build.ivDef, natureKey: 'defense' },
+            'Atq Spé': { value: build.ivAtqSpe, natureKey: 'atqSpe' },
+            'Déf Spé': { value: build.ivDefSpe, natureKey: 'defSpe' },
+            'Vitesse': { value: build.ivVitesse, natureKey: 'vitesse' },
+        } %}
+        {% for label, meta in statFields %}
+            <div class="stat-alloc-row">
+                <span class="stat-alloc-row__label">
+                    {{ label }}
+                    {% if selectedNature and meta.natureKey and selectedNature.up == meta.natureKey %}
+                        <span class="stat-arrow stat-arrow--up" title="Augmentée par la nature">▲</span>
+                    {% elseif selectedNature and meta.natureKey and selectedNature.down == meta.natureKey %}
+                        <span class="stat-arrow stat-arrow--down" title="Diminuée par la nature">▼</span>
+                    {% endif %}
+                </span>
+                <div class="stat-alloc-row__track">
+                    <div class="stat-alloc-row__fill" style="width: {{ (meta.value / 32 * 100)|number_format(0) }}%;"></div>
+                </div>
+                <span class="stat-alloc-row__value">{{ meta.value }}</span>
+            </div>
+        {% endfor %}
+
+        <div class="team-detail-card__moves-label">Capacités :</div>
+        <div class="team-detail-card__moves-grid">
+            {% for i in 1..4 %}
+                {% set moveName = attribute(build, 'capacite' ~ i) %}
+                {% if moveName %}
+                    <span class="team-detail-card__move">
+                        <img src="{{ asset(type_icon((moveTypes[moveName] ?? 'Normal')|capitalize)) }}" alt="">
+                        {{ moveName }}
+                    </span>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
