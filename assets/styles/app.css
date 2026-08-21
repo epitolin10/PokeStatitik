@@ -560,6 +560,10 @@ img {
     background-color: rgba(255, 255, 255, 0.03);
 }
 
+.recent-teams__link {
+    display: contents;
+}
+
 .recent-teams__user {
     display: flex;
     flex-direction: column;
@@ -576,6 +580,14 @@ img {
     align-items: center;
     justify-content: center;
     color: var(--color-bg);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.recent-teams__avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .recent-teams__pokemons {
@@ -596,10 +608,35 @@ img {
 
 .recent-teams__favoris {
     display: flex;
+    justify-content: center;
+}
+
+.recent-teams__like-btn {
+    display: flex;
     flex-direction: column;
     align-items: center;
     gap: 4px;
+    background: none;
+    border: none;
+    color: var(--color-text);
     font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 6px;
+}
+
+.recent-teams__like-btn:hover:not(:disabled) {
+    color: var(--color-down);
+}
+
+.recent-teams__like-btn.is-liked {
+    color: var(--color-down);
+}
+
+.recent-teams__like-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 
 .recent-teams__empty {
@@ -607,6 +644,41 @@ img {
     text-align: center;
     color: var(--color-text-faint);
     font-size: 15px;
+}
+
+.recent-teams--with-actions .recent-teams__head,
+.recent-teams--with-actions .recent-teams__row {
+    grid-template-columns: 1.2fr 3.5fr 1.4fr 1.2fr 1fr 1.5fr;
+}
+
+.recent-teams__actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.recent-teams__action-btn {
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 6px 12px;
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.recent-teams__action-btn:hover {
+    border-color: var(--color-primary-light);
+    color: var(--color-primary-light);
+}
+
+.recent-teams__action-btn--danger:hover {
+    border-color: #db2828;
+    color: #db2828;
 }
 
 /* --------------------------------------------------------------------
@@ -778,13 +850,16 @@ img {
     display: grid;
     grid-template-columns: 420px 1fr;
     gap: 24px;
-    align-items: flex-start;
+    align-items: stretch;
 }
 
 .usage-list {
     background-color: var(--color-card);
     border-radius: var(--radius-card);
-    max-height: 1200px;
+    height: 100%;
+    max-height: calc(100vh - 48px);
+    position: sticky;
+    top: 24px;
     overflow-y: auto;
 }
 
@@ -843,6 +918,17 @@ img {
     height: 22px;
 }
 
+.usage-row__view-btn {
+    flex-shrink: 0;
+    background-color: var(--color-primary);
+    color: var(--color-text);
+    font-family: var(--font-title);
+    font-weight: 700;
+    font-size: 14px;
+    padding: 8px 20px;
+    border-radius: var(--radius-pill);
+}
+
 .usage-detail {
     background-color: var(--color-card);
     border-radius: var(--radius-card);
@@ -888,6 +974,7 @@ img {
 
 .type-pills {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
 }
 
@@ -919,12 +1006,29 @@ img {
     gap: 10px;
 }
 
+.forms-row__link {
+    display: block;
+    border-radius: 8px;
+    padding: 2px;
+    border: 2px solid transparent;
+    transition: border-color 0.15s ease;
+}
+
+.forms-row__link:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.forms-row__link.is-active {
+    border-color: var(--color-primary-light);
+}
+
 .forms-row img {
     width: 48px;
     height: 48px;
     object-fit: contain;
     background-color: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
+    border-radius: 6px;
+    display: block;
 }
 
 .usage-detail__abilities {
@@ -1011,6 +1115,12 @@ img {
     .usage-layout,
     .usage-detail {
         grid-template-columns: 1fr;
+    }
+
+    .usage-list {
+        position: static;
+        height: auto;
+        max-height: 640px;
     }
 }
 
@@ -1107,6 +1217,235 @@ img {
 
 .user-menu__logout:hover {
     color: var(--color-down);
+}
+
+.user-menu__profile-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-text);
+}
+
+.user-menu__avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--color-bg);
+}
+
+/* --------------------------------------------------------------------
+   Mon profil
+   -------------------------------------------------------------------- */
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    background-color: var(--color-card);
+    border-radius: var(--radius-card);
+    padding: 32px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+.profile-avatar-form {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.profile-avatar {
+    position: relative;
+    display: block;
+    width: 112px;
+    height: 112px;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    background-color: var(--color-primary);
+}
+
+.profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-avatar__initial {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-family: var(--font-title);
+    font-weight: 700;
+    font-size: 44px;
+    color: var(--color-bg);
+}
+
+.profile-avatar__edit {
+    position: absolute;
+    inset: auto 0 0 0;
+    background-color: rgba(6, 4, 10, 0.72);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    padding: 6px 0;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.profile-avatar:hover .profile-avatar__edit {
+    opacity: 1;
+}
+
+.profile-identity {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 200px;
+}
+
+.profile-avatar-remove {
+    align-self: flex-start;
+    background: none;
+    border: none;
+    color: var(--color-text-faint);
+    font-size: 13px;
+    cursor: pointer;
+    padding: 0;
+    margin-top: 4px;
+}
+
+.profile-avatar-remove:hover {
+    color: var(--color-down);
+}
+
+.profile-stats {
+    display: flex;
+    gap: 32px;
+}
+
+.profile-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.profile-stat__value {
+    font-family: var(--font-title);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--color-primary-light);
+}
+
+.profile-stat__label {
+    font-size: 13px;
+    color: var(--color-text-faint);
+}
+
+.profile-section {
+    margin-bottom: 48px;
+}
+
+.profile-section .section__header-row {
+    margin-bottom: 16px;
+}
+
+@media (max-width: 700px) {
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .profile-identity {
+        align-items: center;
+    }
+
+    .profile-stats {
+        justify-content: center;
+    }
+}
+
+/* --------------------------------------------------------------------
+   Admin — classement
+   -------------------------------------------------------------------- */
+
+.admin-classement-list {
+    background-color: var(--color-card);
+    border-radius: var(--radius-card);
+    max-height: 75vh;
+    overflow-y: auto;
+}
+
+.admin-classement-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 10px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.admin-classement-row--head {
+    position: sticky;
+    top: 0;
+    background-color: var(--color-card);
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--color-text-faint);
+    z-index: 1;
+}
+
+.admin-classement-row__identity {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+    min-width: 0;
+}
+
+.admin-classement-row__rank-label {
+    flex-shrink: 0;
+    width: 120px;
+    text-align: center;
+}
+
+.admin-classement-rank-input {
+    flex-shrink: 0;
+    width: 120px;
+    text-align: center;
+    background-color: var(--color-input);
+    border: none;
+    border-radius: 8px;
+    padding: 8px;
+    color: var(--color-text);
+    font-size: 15px;
+    outline: none;
+    transition: box-shadow 0.15s ease;
+}
+
+.admin-classement-rank-input:focus {
+    box-shadow: 0 0 0 2px var(--color-primary);
+}
+
+.admin-classement-rank-input.is-saved {
+    box-shadow: 0 0 0 2px var(--color-up);
+}
+
+.admin-classement-rank-input.is-error {
+    box-shadow: 0 0 0 2px var(--color-down);
 }
 
 /* --------------------------------------------------------------------
@@ -1427,7 +1766,7 @@ img {
 .team-detail-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: 28px;
     margin-top: 32px;
     text-align: left;
 }
@@ -1437,14 +1776,16 @@ img {
     border-radius: var(--radius-card);
     padding: 22px;
     display: grid;
-    grid-template-columns: 110px 1fr;
-    gap: 20px;
+    grid-template-columns: 140px 1fr;
+    gap: 28px;
 }
 
 .team-detail-card__identity {
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     gap: 8px;
+    min-width: 0;
 }
 
 .team-detail-card__sprite {
@@ -1516,6 +1857,129 @@ img {
     .team-detail-card {
         grid-template-columns: 1fr;
     }
+}
+
+.like-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+    transition: color 0.15s;
+}
+
+.like-btn:hover:not(:disabled) {
+    color: var(--color-down);
+}
+
+.like-btn.is-liked {
+    color: var(--color-down);
+}
+
+.like-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.team-comments {
+    margin-top: 48px;
+    background-color: var(--color-card);
+    border-radius: var(--radius-card);
+    padding: 28px;
+    text-align: left;
+}
+
+.team-comments__title {
+    font-family: var(--font-title);
+    font-size: 22px;
+    margin-bottom: 16px;
+}
+
+.team-comments__form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.team-comments__form textarea {
+    background-color: var(--color-input);
+    border: none;
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    resize: vertical;
+}
+
+.team-comments__login-hint {
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+    margin-bottom: 24px;
+}
+
+.team-comments__login-hint a {
+    color: var(--color-primary-light);
+    text-decoration: underline;
+}
+
+.team-comments__list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.team-comments__item {
+    display: flex;
+    gap: 14px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.team-comments__item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.team-comments__avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #D9D9D9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-bg);
+    flex-shrink: 0;
+}
+
+.team-comments__body strong {
+    display: block;
+    margin-bottom: 4px;
+    font-family: var(--font-body);
+    font-size: 14px;
+}
+
+.team-comments__body p {
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.team-comments__empty {
+    color: var(--color-text-faint);
+    font-family: var(--font-body);
+    text-align: center;
+    padding: 24px 0;
 }
 
 .nature-grid button {
@@ -1868,8 +2332,14 @@ img {
     }
 
     .recent-teams__head,
-    .recent-teams__row {
+    .recent-teams__row,
+    .recent-teams--with-actions .recent-teams__head,
+    .recent-teams--with-actions .recent-teams__row {
         grid-template-columns: 1fr;
+    }
+
+    .recent-teams__actions {
+        justify-content: flex-start;
     }
 
     .calc-teaser {
@@ -1879,5 +2349,346 @@ img {
 
     .calc-teaser__mon {
         align-items: center;
+    }
+}
+
+/* --------------------------------------------------------------------
+   Damage calculator
+   -------------------------------------------------------------------- */
+
+.calc-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.3fr 1fr;
+    gap: 24px;
+    align-items: start;
+    margin-top: 8px;
+}
+
+.calc-panel {
+    background-color: var(--color-card);
+    border-radius: var(--radius-card);
+    border: 2px solid transparent;
+    padding: 20px;
+}
+
+.calc-panel--a {
+    border-color: #3B82F6;
+}
+
+.calc-panel--b {
+    border-color: #FF3D71;
+}
+
+.calc-panel__pokemon-picker {
+    justify-content: center;
+    text-align: center;
+}
+
+.calc-panel__identity {
+    text-align: center;
+    margin: 16px 0;
+}
+
+.calc-panel__sprite {
+    width: 96px;
+    height: 96px;
+    object-fit: contain;
+    margin: 0 auto;
+}
+
+.calc-panel__name {
+    font-size: 20px;
+    margin: 6px 0 8px;
+}
+
+.calc-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+}
+
+.calc-stats-table th {
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: var(--color-text-faint);
+    font-weight: 600;
+    text-align: left;
+    padding-bottom: 6px;
+}
+
+.calc-stats-table td {
+    padding: 4px 6px 4px 0;
+    vertical-align: middle;
+}
+
+.calc-stats-table__label {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.calc-stat-input {
+    width: 56px;
+    background-color: var(--color-input);
+    border: none;
+    border-radius: 8px;
+    padding: 6px 8px;
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: 13px;
+    text-align: center;
+    appearance: textfield;
+}
+
+.calc-stat-input::-webkit-outer-spin-button,
+.calc-stat-input::-webkit-inner-spin-button {
+    appearance: auto;
+}
+
+.calc-stats-table__value {
+    font-family: var(--font-body);
+    font-weight: 700;
+    text-align: right;
+    min-width: 32px;
+}
+
+.calc-stage-select {
+    width: 60px;
+    background-color: var(--color-input);
+    border: none;
+    border-radius: 8px;
+    padding: 4px 6px;
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: 13px;
+}
+
+.calc-panel__selects {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.calc-select-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--color-text-muted);
+}
+
+.calc-select {
+    flex: 1;
+    max-width: 65%;
+    appearance: auto;
+    font-size: 13px;
+    padding: 8px 12px;
+}
+
+.calc-move-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.calc-move-row__picker {
+    flex: 1;
+    min-width: 0;
+}
+
+.dropdown-btn__left-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.calc-move-row__power {
+    width: 28px;
+    flex-shrink: 0;
+    text-align: center;
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--color-text-muted);
+}
+
+.calc-crit-toggle,
+.calc-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    background-color: var(--color-input);
+    border-radius: var(--radius-pill);
+    padding: 8px 14px;
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.calc-crit-toggle input,
+.calc-toggle-btn input {
+    accent-color: var(--color-primary);
+}
+
+.calc-crit-toggle.is-active,
+.calc-toggle-btn.is-active {
+    background-color: var(--color-primary);
+    color: var(--color-text);
+}
+
+.calc-field-toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.calc-middle {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.calc-results {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.calc-results__title {
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.calc-result-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    background-color: var(--color-card);
+    border: none;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: 13px;
+    cursor: pointer;
+    text-align: left;
+}
+
+.calc-result-row:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+.calc-result-row.is-active {
+    background-color: var(--color-primary);
+    font-weight: 700;
+}
+
+.calc-vs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    background-color: var(--color-card);
+    border-radius: var(--radius-card);
+    padding: 16px;
+}
+
+.calc-vs__mon {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-body);
+    font-weight: 700;
+}
+
+.calc-vs__mon img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+.calc-vs__label {
+    font-family: var(--font-title);
+    color: var(--color-primary-light);
+    font-size: 18px;
+}
+
+.calc-vs__detail {
+    background-color: var(--color-card);
+    border-radius: var(--radius-card);
+    padding: 20px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+.calc-vs__percent {
+    color: var(--color-text-muted);
+}
+
+.calc-vs__empty {
+    text-align: center;
+    color: var(--color-text-faint);
+    font-family: var(--font-body);
+    padding: 24px;
+}
+
+.calc-eff {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 10px;
+    border-radius: var(--radius-pill);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.calc-eff--up {
+    background-color: rgba(57, 255, 136, 0.15);
+    color: var(--color-up);
+}
+
+.calc-eff--down {
+    background-color: rgba(255, 61, 113, 0.15);
+    color: var(--color-down);
+}
+
+.calc-eff--zero {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--color-text-faint);
+}
+
+.calc-field-controls {
+    display: flex;
+    gap: 20px;
+    background-color: var(--color-card);
+    border-radius: var(--radius-card);
+    padding: 16px 20px;
+}
+
+.calc-field-controls .calc-select-label {
+    flex: 1;
+}
+
+@media (max-width: 1100px) {
+    .calc-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .calc-results {
+        grid-template-columns: 1fr;
     }
 }

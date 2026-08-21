@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Calculateur de dégâts — PokeStatitik{% endblock %}
+
+{% block body %}
+    {% include 'partials/_header.html.twig' %}
+
+    <main>
+        <section class="usage-page container">
+            <h1 class="section__title" style="text-align:center; margin-bottom: 8px;">Calculateur de dégâts</h1>
+            <p class="section__subtitle" style="text-align:center; margin-bottom: 32px;">Toujours au niveau 50, comme sur Pokémon Champions</p>
+
+            <div data-controller="calculator" data-calculator-bootstrap-value="{{ bootstrap|json_encode }}">
+                <div class="calc-layout">
+                    <div class="calc-panel calc-panel--a" data-calculator-target="panelA"></div>
+
+                    <div class="calc-middle">
+                        <div class="calc-results" data-calculator-target="results"></div>
+
+                        <div data-calculator-target="vs"></div>
+
+                        <div class="calc-field-controls">
+                            <label class="calc-select-label">Météo :
+                                <select class="dropdown-btn calc-select" data-calculator-target="weather" data-action="change->calculator#onGlobalChange"></select>
+                            </label>
+                            <label class="calc-select-label">Champs :
+                                <select class="dropdown-btn calc-select" data-calculator-target="terrain" data-action="change->calculator#onGlobalChange"></select>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="calc-panel calc-panel--b" data-calculator-target="panelB"></div>
+                </div>
+
+                <div class="modal-overlay" data-calculator-target="backdrop" data-action="click->calculator#onBackdropClick">
+                    <div data-calculator-target="modalContent"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    {% include 'partials/_footer.html.twig' %}
+{% endblock %}

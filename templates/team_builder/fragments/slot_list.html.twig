@@ -7,7 +7,7 @@
             {% if slot %}
                 <a href="{{ path('app_team_builder_slot', { position: position }) }}" class="builder-slot-row__main">
                     <img class="builder-slot-row__sprite" src="{{ champions_asset(slot.pokemon.summary.sprite) }}" alt="{{ slot.pokemon.name }}">
-                    <span class="builder-slot-row__name">{{ pokemon_name_fr(slot.pokemon.name) }}</span>
+                    <span class="builder-slot-row__name">{{ pokemon_name_fr(slot.pokemon.name, slot.pokemon.showdownId) }}</span>
                 </a>
                 <form method="post" action="{{ path('app_team_builder_slot_remove', { position: position }) }}" onsubmit="return confirm('Retirer ce Pokémon de l\'équipe ?');">
                     <button type="submit" class="builder-slot-row__remove" aria-label="Retirer">✕</button>

@@ -1,0 +1,74 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon profil — PokeStatitik{% endblock %}
+
+{% block body %}
+    {% include 'partials/_header.html.twig' %}
+
+    <main>
+        <section class="usage-page container" style="max-width: 1300px; margin: 0 auto;">
+            {% for message in app.flashes('success') %}
+                <p class="auth-error" style="background-color: rgba(57,255,136,0.12); border-color: var(--color-up); color: var(--color-up); max-width: none; text-align: center;">
+                    {{ message }}
+                </p>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <p class="auth-error" style="max-width: none; text-align: center;">{{ message }}</p>
+            {% endfor %}
+
+            <div class="profile-header">
+                <form method="post" action="{{ path('app_profile_avatar') }}" enctype="multipart/form-data" class="profile-avatar-form">
+                    <label class="profile-avatar" for="avatar-input">
+                        {% if compte.avatarFilename %}
+                            <img src="{{ asset('uploads/avatars/' ~ compte.avatarFilename) }}" alt="{{ compte.pseudo }}">
+                        {% else %}
+                            <span class="profile-avatar__initial">{{ compte.pseudo|slice(0, 1)|upper }}</span>
+                        {% endif %}
+                        <span class="profile-avatar__edit">Changer</span>
+                    </label>
+                    <input id="avatar-input" type="file" name="avatar" accept="image/png,image/jpeg,image/webp,image/gif" onchange="this.form.requestSubmit()" hidden>
+                </form>
+
+                <div class="profile-identity">
+                    <h1 class="section__title">{{ compte.pseudo }}</h1>
+                    <p class="section__subtitle">Membre depuis {{ compte.createdAt|date('d/m/Y') }}</p>
+                    {% if compte.avatarFilename %}
+                        <form method="post" action="{{ path('app_profile_avatar_remove') }}">
+                            <button type="submit" class="profile-avatar-remove">Retirer la photo</button>
+                        </form>
+                    {% endif %}
+                </div>
+
+                <div class="profile-stats">
+                    <div class="profile-stat">
+                        <span class="profile-stat__value">{{ teamCount }}</span>
+                        <span class="profile-stat__label">Équipes créées</span>
+                    </div>
+                    <div class="profile-stat">
+                        <span class="profile-stat__value">{{ likesReceived }}</span>
+                        <span class="profile-stat__label">Likes reçus</span>
+                    </div>
+                    <div class="profile-stat">
+                        <span class="profile-stat__value">{{ favoriteTeams|length }}</span>
+                        <span class="profile-stat__label">Favoris</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <div class="section__header-row">
+                    <h2 class="section__title" style="font-size: 22px;">Mes équipes</h2>
+                    <a href="{{ path('app_team_builder') }}" class="btn btn--primary">Créer une équipe</a>
+                </div>
+                {% include 'profile/_my_team_list.html.twig' with { teams: myTeams } %}
+            </div>
+
+            <div class="profile-section">
+                <h2 class="section__title" style="font-size: 22px; margin-bottom: 16px;">Mes favoris</h2>
+                {% include 'partials/_team_list.html.twig' with { teams: favoriteTeams, emptyMessage: 'Vous n\'avez encore aimé aucune équipe — parcourez les équipes de la communauté pour en ajouter à vos favoris.' } %}
+            </div>
+        </section>
+    </main>
+
+    {% include 'partials/_footer.html.twig' %}
+{% endblock %}

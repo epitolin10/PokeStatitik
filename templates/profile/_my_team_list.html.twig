@@ -1,11 +1,12 @@
-{# Shared "Pseudo / Pokémons / Titre / Tier / Favoris" table. Param: teams #}
-<div class="recent-teams">
+{# Like _team_list.html.twig but with "Modifier / Supprimer" actions instead of a like button. Param: teams #}
+<div class="recent-teams recent-teams--with-actions">
     <div class="recent-teams__head">
         <span>Pseudo :</span>
         <span>Pokémons :</span>
         <span>Titre :</span>
         <span>Tier :</span>
         <span>Favoris :</span>
+        <span></span>
     </div>
     <div class="recent-teams__body">
         {% for team in teams %}
@@ -32,17 +33,16 @@
                     <span>{{ team.titre }}</span>
                     <span class="recent-teams__tier">{{ team.tier }}</span>
                 </a>
-                <form method="post" action="{{ path('app_team_like', { id: team.id }) }}" class="recent-teams__favoris">
-                    <button type="submit" class="recent-teams__like-btn{{ team.hasLiked ? ' is-liked' }}"{{ app.user ? '' : ' disabled' }}>
-                        <svg width="28" height="26" viewBox="0 0 20 18" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M10 17S1 11.5 1 5.8C1 2.6 3.4 1 6 1c1.8 0 3.3 1 4 2.4C10.7 2 12.2 1 14 1c2.6 0 4.6 1.6 4.6 4.8C19 11.5 10 17 10 17Z" fill="{{ team.hasLiked ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="1.5"/>
-                        </svg>
-                        <span>{{ team.favoris }}</span>
-                    </button>
-                </form>
+                <span class="recent-teams__favoris">{{ team.favoris }}</span>
+                <div class="recent-teams__actions">
+                    <a href="{{ path('app_team_builder_edit', { id: team.id }) }}" class="recent-teams__action-btn">Modifier</a>
+                    <form method="post" action="{{ path('app_profile_team_delete', { id: team.id }) }}" onsubmit="return confirm('Supprimer définitivement « ' + {{ team.titre|json_encode }} + ' » ?');">
+                        <button type="submit" class="recent-teams__action-btn recent-teams__action-btn--danger">Supprimer</button>
+                    </form>
+                </div>
             </div>
         {% else %}
-            <p class="recent-teams__empty">{{ emptyMessage|default("Aucune équipe partagée pour le moment — soyez le premier·ère à publier la vôtre !") }}</p>
+            <p class="recent-teams__empty">Vous n'avez pas encore créé d'équipe — lancez-vous !</p>
         {% endfor %}
     </div>
 </div>

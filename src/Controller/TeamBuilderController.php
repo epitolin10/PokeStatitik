@@ -3,17 +3,21 @@
 namespace App\Controller;
 
 use App\Entity\BuildPokemon;
+use App\Entity\Commentaire;
 use App\Entity\Compte;
 use App\Entity\Equipe;
+use App\Entity\Like;
 use App\Entity\Tiers;
-use App\Repository\ObjetRepository;
+use App\Repository\CommentaireRepository;
+use App\Repository\CompteRepository;
+use App\Repository\LikeRepository;
 use App\Repository\TiersRepository;
 use App\Service\ChampionsBattleDataClient;
+use App\Service\ItemCatalog;
 use App\Service\NatureCatalog;
 use App\Service\PokeApiClient;
 use App\Service\TeamDraftManager;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Asset\Packages;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -21,6 +25,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -47,8 +52,6 @@ class TeamBuilderController extends AbstractController
         private readonly ChampionsBattleDataClient $championsClient,
         private readonly PokeApiClient $pokeApi,
         private readonly TiersRepository $tiersRepository,
-        private readonly ObjetRepository $objetRepository,
-        private readonly Packages $assets,
     ) {
     }
 
@@ -59,7 +62,25 @@ class TeamBuilderController extends AbstractController
             'draft' => $this->draft->get(),
             'slots' => $this->hydrateSlots(),
             'tiersList' => $this->tiersRepository->findAll(),
+            'isEditing' => null !== $this->draft->getEditingEquipeId(),
         ]);
+    }
+
+    #[Route('/equipes/{id}/modifier', name: 'app_team_builder_edit', requirements: ['id' => '\d+'], methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
+    public function edit(int $id, EntityManagerInterface $entityManager, #[CurrentUser] Compte $compte): Response
+    {
+        $equipe = $entityManager->getRepository(Equipe::class)->find($id);
+        if (null === $equipe) {
+            throw $this->createNotFoundException();
+        }
+        if ($equipe->getCompte()?->getId() !== $compte->getId()) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $this->draft->loadFromEquipe($equipe);
+
+        return $this->redirectToRoute('app_team_builder');
     }
 
     #[Route('/equipes/creer/info', name: 'app_team_builder_info', methods: ['POST'])]
@@ -192,29 +213,10 @@ class TeamBuilderController extends AbstractController
     }
 
     #[Route('/equipes/creer/slot/{position}/objet', name: 'app_team_builder_choose_objet', requirements: ['position' => '[1-6]'], methods: ['GET'])]
-    public function chooseObjet(int $position, Request $request): Response
+    public function chooseObjet(int $position, Request $request, ItemCatalog $itemCatalog): Response
     {
         $query = trim((string) $request->query->get('q', ''));
-
-        $items = $this->pokeApi->getCompetitiveItems();
-        foreach ($this->objetRepository->findAll() as $objet) {
-            $items[] = [
-                'slug' => 'db-'.$objet->getId(),
-                'name' => $objet->getNom(),
-                'effect' => $objet->getDescription(),
-                'sprite' => $objet->getUrlImage() ? $this->assets->getUrl($objet->getUrlImage()) : null,
-            ];
-        }
-
-        if ('' !== $query) {
-            $needle = mb_strtolower($query);
-            $items = array_values(array_filter(
-                $items,
-                static fn (array $i) => str_contains(mb_strtolower($i['name']), $needle)
-            ));
-        }
-
-        usort($items, static fn (array $a, array $b) => $a['name'] <=> $b['name']);
+        $items = $itemCatalog->search($query);
 
         $context = [
             'position' => $position,
@@ -311,12 +313,25 @@ class TeamBuilderController extends AbstractController
 
         $tiers = $draftData['tiersId'] ? $entityManager->getRepository(Tiers::class)->find($draftData['tiersId']) : null;
 
-        $equipe = new Equipe();
+        $editingEquipeId = $draftData['editingEquipeId'] ?? null;
+        $equipe = null !== $editingEquipeId ? $entityManager->getRepository(Equipe::class)->find($editingEquipeId) : null;
+        if (null !== $equipe && $equipe->getCompte()?->getId() !== $compte->getId()) {
+            throw $this->createAccessDeniedException();
+        }
+        $isEditing = null !== $equipe;
+        $equipe ??= new Equipe();
+
         $equipe->setCompte($compte);
         $equipe->setTitre($draftData['titre'] ?: 'Équipe sans titre');
         $equipe->setDescription($draftData['description']);
         $equipe->setIdEquipePokemonChampions($draftData['idEquipePokemonChampions']);
         $equipe->setTiers($tiers);
+
+        if ($isEditing) {
+            foreach ($equipe->getBuildPokemons()->toArray() as $existingBuild) {
+                $equipe->removeBuildPokemon($existingBuild);
+            }
+        }
 
         $equipeErrors = $validator->validate($equipe);
 
@@ -391,19 +406,26 @@ class TeamBuilderController extends AbstractController
             return $this->redirectToRoute('app_team_builder');
         }
 
-        $entityManager->persist($equipe);
+        if (!$isEditing) {
+            $entityManager->persist($equipe);
+        }
         $entityManager->flush();
 
         $this->draft->clear();
 
-        $this->addFlash('success', 'Équipe publiée avec succès !');
+        $this->addFlash('success', $isEditing ? 'Équipe modifiée avec succès !' : 'Équipe publiée avec succès !');
 
         return $this->redirectToRoute('app_team_builder_published', ['id' => $equipe->getId()]);
     }
 
     #[Route('/equipes/{id}/publiee', name: 'app_team_builder_published', requirements: ['id' => '\d+'], methods: ['GET'])]
-    public function published(int $id, EntityManagerInterface $entityManager): Response
-    {
+    public function published(
+        int $id,
+        EntityManagerInterface $entityManager,
+        LikeRepository $likeRepository,
+        CommentaireRepository $commentaireRepository,
+        CompteRepository $compteRepository,
+    ): Response {
         $equipe = $entityManager->getRepository(Equipe::class)->find($id);
         if (null === $equipe) {
             throw $this->createNotFoundException();
@@ -423,11 +445,89 @@ class TeamBuilderController extends AbstractController
             $slots[] = ['build' => $build, 'pokemon' => $pokemon, 'moveTypes' => $moveTypes];
         }
 
+        $currentUser = $this->getUser();
+        $hasLiked = $currentUser instanceof Compte
+            && null !== $likeRepository->findOneBy(['idEquipe' => $id, 'idCompte' => $currentUser->getId()]);
+
+        $commentEntities = $commentaireRepository->findBy(['idEquipe' => $id], ['id' => 'DESC']);
+        $compteIds = array_unique(array_map(static fn (Commentaire $c) => $c->getIdCompte(), $commentEntities));
+        $pseudoById = [];
+        if ([] !== $compteIds) {
+            foreach ($compteRepository->findBy(['id' => $compteIds]) as $compte) {
+                $pseudoById[$compte->getId()] = $compte->getPseudo();
+            }
+        }
+        $comments = array_map(static fn (Commentaire $c) => [
+            'pseudo' => $pseudoById[$c->getIdCompte()] ?? 'Utilisateur supprimé',
+            'text' => $c->getCommentaire(),
+        ], $commentEntities);
+
         return $this->render('team_builder/published.html.twig', [
             'equipe' => $equipe,
             'slots' => $slots,
             'natures' => NatureCatalog::all(),
+            'likeCount' => $likeRepository->count(['idEquipe' => $id]),
+            'hasLiked' => $hasLiked,
+            'comments' => $comments,
         ]);
+    }
+
+    #[Route('/equipes/{id}/like', name: 'app_team_like', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function toggleLike(
+        int $id,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        LikeRepository $likeRepository,
+        #[CurrentUser] Compte $compte,
+    ): RedirectResponse {
+        if (null === $entityManager->getRepository(Equipe::class)->find($id)) {
+            throw $this->createNotFoundException();
+        }
+
+        $existing = $likeRepository->findOneBy(['idEquipe' => $id, 'idCompte' => $compte->getId()]);
+        if (null !== $existing) {
+            $entityManager->remove($existing);
+        } else {
+            $like = new Like();
+            $like->setIdEquipe($id);
+            $like->setIdCompte($compte->getId());
+            $entityManager->persist($like);
+        }
+        $entityManager->flush();
+
+        // liking from the community list or the home teaser should stay there, not jump to the team page
+        $referer = $request->headers->get('referer');
+        if (null !== $referer && str_starts_with($referer, $request->getSchemeAndHttpHost())) {
+            return $this->redirect($referer);
+        }
+
+        return $this->redirectToRoute('app_team_builder_published', ['id' => $id]);
+    }
+
+    #[Route('/equipes/{id}/commentaire', name: 'app_team_comment', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function addComment(
+        int $id,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        #[CurrentUser] Compte $compte,
+    ): RedirectResponse {
+        if (null === $entityManager->getRepository(Equipe::class)->find($id)) {
+            throw $this->createNotFoundException();
+        }
+
+        $text = trim((string) $request->request->get('commentaire'));
+        if ('' !== $text) {
+            $comment = new Commentaire();
+            $comment->setIdEquipe($id);
+            $comment->setIdCompte($compte->getId());
+            $comment->setCommentaire($text);
+            $entityManager->persist($comment);
+            $entityManager->flush();
+        }
+
+        return $this->redirectToRoute('app_team_builder_published', ['id' => $id]);
     }
 
     /**

@@ -1,0 +1,60 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Administration du classement — PokeStatitik{% endblock %}
+
+{% block body %}
+    {% include 'partials/_header.html.twig' %}
+
+    <main>
+        <section class="usage-page container">
+            <h1 class="section__title" style="text-align:center; margin-bottom: 8px;">Administration du classement</h1>
+            <p class="section__subtitle" style="text-align:center; margin-bottom: 32px;">Indique le numéro d'usage de chaque Pokémon pour Champions Solo et Champions Duo — laisse un champ vide pour le retirer du classement de ce tier.</p>
+
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <p class="auth-error" style="max-width: 700px; margin: 0 auto 24px;">{{ message }}</p>
+                {% endfor %}
+            {% endfor %}
+
+            <form method="get" action="{{ path('app_admin_classement') }}" class="search-bar" style="max-width: 420px; margin: 0 auto 24px;">
+                <input type="search" name="q" value="{{ query }}" placeholder="Filtrer par nom...">
+            </form>
+
+            <div class="admin-classement-list" data-controller="admin-classement">
+                <div class="admin-classement-row admin-classement-row--head">
+                    <span>Pokémon</span>
+                    {% for tiers in tiersList %}
+                        <span class="admin-classement-row__rank-label">{{ tiers.nomTiers }}</span>
+                    {% endfor %}
+                </div>
+
+                {% for row in rows %}
+                    <div class="admin-classement-row">
+                        <div class="admin-classement-row__identity">
+                            <img class="usage-row__sprite" src="{{ champions_asset(row.pokemon.summary.sprite) }}" alt="">
+                            <span class="usage-row__name">{{ pokemon_name_fr(row.pokemon.name, row.pokemon.showdownId) }}</span>
+                        </div>
+
+                        {% for tiers in tiersList %}
+                            <input
+                                type="number"
+                                min="1"
+                                placeholder="—"
+                                class="admin-classement-rank-input"
+                                value="{{ row.rangByTiersId[tiers.id] ?? '' }}"
+                                data-action="change->admin-classement#save"
+                                data-url="{{ path('app_admin_classement_set') }}"
+                                data-tiers-id="{{ tiers.id }}"
+                                data-slug="{{ row.pokemon.slug }}"
+                            >
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="recent-teams__empty">Aucun Pokémon trouvé pour « {{ query }} ».</p>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+
+    {% include 'partials/_footer.html.twig' %}
+{% endblock %}

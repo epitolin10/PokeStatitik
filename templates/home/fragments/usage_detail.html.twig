@@ -1,0 +1,112 @@
+{% if selected %}
+    <div class="usage-detail">
+        <div class="usage-detail__identity">
+            <h2 class="usage-detail__name">{{ isMega ? megaDisplayName : pokemon_name_fr(selected.name, selected.showdownId) }}</h2>
+
+            <div class="usage-detail__top-row">
+                <img class="usage-detail__sprite" src="{{ champions_asset((isMega ? selectedForm.image_path : selected.summary.sprite)|replace({'\\\\': '/'})) }}" alt="{{ selected.name }}">
+
+                <div class="usage-detail__info">
+                    <p class="info-row"><strong>Type :</strong></p>
+                    <div class="type-pills">
+                        {% for type in (isMega ? selectedForm.types : selected.summary.types) %}
+                            <span class="type-pill">
+                                <img src="{{ asset(type_icon(type)) }}" alt="">
+                                {{ type_name_fr(type)|upper }}
+                            </span>
+                        {% endfor %}
+                    </div>
+
+                    {% set abilities = (isMega ? selectedForm.abilities : selected.summary.primary.abilities)|split('|') %}
+                    <p class="info-row"><strong>Talent{{ abilities|length > 1 ? 's' : '' }} :</strong></p>
+                    <ul class="abilities-list">
+                        {% for ability in abilities %}
+                            <li>{{ ability_name_fr(ability) }}</li>
+                        {% endfor %}
+                    </ul>
+
+                    {% if selected.summary.forms|length > 1 %}
+                        <p class="info-row"><strong>Formes :</strong></p>
+                        <div class="forms-row">
+                            {% for form in selected.summary.forms %}
+                                <a href="{{ path('app_usage', { pokemon: selected.slug, format: format, form: 'Base' == form.form_kind ? null : form.slug }) }}"
+                                   class="forms-row__link{{ (isMega and selectedForm.slug == form.slug) or (not isMega and 'Base' == form.form_kind) ? ' is-active' : '' }}"
+                                   data-action="click->usage#selectPokemon">
+                                    <img src="{{ champions_asset(form.image_path|replace({'\\\\': '/'})) }}" alt="{{ form.form_name }}" title="{{ form.form_name }}">
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="base-stats">
+                    <h3>Statistiques :</h3>
+                    {% if baseStats %}
+                        {% for label, key in { 'PV': 'hp', 'Attaque': 'attack', 'Défense': 'defense', 'Atq Spé': 'sp_attack', 'Déf Spé': 'sp_defense', 'Vitesse': 'speed' } %}
+                            <div class="base-stat-row">
+                                <span class="base-stat-row__label">{{ label }}</span>
+                                <span class="base-stat-row__value">{{ baseStats[key] }}</span>
+                                <div class="base-stat-row__track">
+                                    <div class="base-stat-row__fill" style="width: {{ (baseStats[key] / 255 * 100)|number_format(0) }}%; background-color: {{ stat_color(baseStats[key]) }};"></div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="usage-detail__abilities">Stats de base indisponibles pour ce Pokémon.</p>
+                    {% endif %}
+                    {% if megaStatsUnavailable %}
+                        <p class="usage-detail__abilities">Stats officielles indisponibles pour cette méga-évolution — affichage des stats de la forme de base.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="usage-detail__usage">
+            <h3>Statistiques d'utilisation ({{ format == 'Doubles' ? 'Champions Duo' : 'Champions Solo' }})</h3>
+
+            {% for category, title in { 'move': 'Capacités', 'held_item': 'Objets tenus', 'ability': 'Talents', 'teammate': 'Coéquipiers', 'stat_alignment': 'Natures' } %}
+                {% if rowsByCategory[category] is defined %}
+                    <div class="usage-stat-block">
+                        <h4>{{ title }}</h4>
+                        <ul class="usage-stat-list">
+                            {% for row in rowsByCategory[category] %}
+                                {% if category == 'move' %}
+                                    {% set displayName = move_name_fr(row.name) %}
+                                {% elseif category == 'held_item' %}
+                                    {% set displayName = item_name_fr(row.name) %}
+                                {% elseif category == 'ability' %}
+                                    {% set displayName = ability_name_fr(row.name) %}
+                                {% elseif category == 'teammate' %}
+                                    {% set displayName = pokemon_name_fr(row.name) %}
+                                {% elseif category == 'stat_alignment' %}
+                                    {% set displayName = nature_name_fr(row.name) %}
+                                {% else %}
+                                    {% set displayName = row.name %}
+                                {% endif %}
+                                <li>
+                                    <span>{{ displayName }}</span>
+                                    {% if row.stat_up %}<span class="usage-stat-list__meta">{{ row.stat_up }} ↑ / {{ row.stat_down }} ↓</span>{% endif %}
+                                    {% if row.percentage %}<span class="usage-stat-list__pct">{{ row.percentage }}</span>{% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            {% endfor %}
+
+            {% if rowsByCategory['stat_points'] is defined %}
+                <div class="usage-stat-block">
+                    <h4>Répartitions d'EV les plus utilisées</h4>
+                    <ul class="usage-stat-list">
+                        {% for row in rowsByCategory['stat_points'] %}
+                            <li>
+                                <span>PV {{ row.hp_points }} / Atq {{ row.attack_points }} / Déf {{ row.defense_points }} / AtqSpé {{ row.sp_atk_points }} / DéfSpé {{ row.sp_def_points }} / Vit {{ row.speed_points }}</span>
+                                <span class="usage-stat-list__pct">{{ row.percentage }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endif %}

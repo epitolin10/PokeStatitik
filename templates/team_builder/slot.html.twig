@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Entrainement de {{ pokemon_name_fr(pokemon.name) }} — PokeStatitik{% endblock %}
+{% block title %}Entrainement de {{ pokemon_name_fr(pokemon.name, pokemon.showdownId) }} — PokeStatitik{% endblock %}
 
 {% block body %}
     {% include 'partials/_header.html.twig' %}

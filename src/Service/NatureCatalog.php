@@ -86,4 +86,24 @@ class NatureCatalog
     {
         return self::find($key)['name'] ?? $key;
     }
+
+    /** English nature name (as returned by championsbattledata.com's usage stats) => French key above. */
+    private const ENGLISH_TO_KEY = [
+        'hardy' => 'serieux', 'lonely' => 'solo', 'brave' => 'brave', 'adamant' => 'rigide', 'naughty' => 'mauvais',
+        'bold' => 'assure', 'docile' => 'docile', 'relaxed' => 'relax', 'impish' => 'malin', 'lax' => 'lache',
+        'timid' => 'timide', 'hasty' => 'presse', 'serious' => 'serieux', 'jolly' => 'jovial', 'naive' => 'naif',
+        'modest' => 'modeste', 'mild' => 'doux', 'quiet' => 'discret', 'bashful' => 'farceur', 'rash' => 'foufou',
+        'calm' => 'calme', 'gentle' => 'gentil', 'sassy' => 'malpoli', 'careful' => 'prudent', 'quirky' => 'bizarre',
+    ];
+
+    /**
+     * French name for a nature given its English display name (e.g. "Adamant" => "Rigide").
+     * Falls back to the English name if it isn't recognized.
+     */
+    public static function nameFr(string $englishName): string
+    {
+        $key = self::ENGLISH_TO_KEY[strtolower(trim($englishName))] ?? null;
+
+        return null !== $key ? self::label($key) : $englishName;
+    }
 }

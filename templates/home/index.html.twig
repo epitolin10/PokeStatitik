@@ -23,7 +23,7 @@
             </div>
 
             <div class="usage-cards">
-                <a href="{{ path('app_usage') }}" class="usage-card">
+                <a href="{{ path('app_usage', { format: 'Doubles' }) }}" class="usage-card">
                     <h3 class="usage-card__title">Champions <span class="accent">Duo</span></h3>
                     <div class="usage-card__mons">
                         <img src="{{ asset('images/usage/duo-carchacrok.png') }}" alt="Carchacrok" style="left:0; top:0; width:125px; height:131px;">
@@ -34,7 +34,7 @@
                     <span class="link-arrow usage-card__link">Voir le classement →</span>
                 </a>
 
-                <a href="{{ path('app_usage') }}" class="usage-card">
+                <a href="{{ path('app_usage', { format: 'Singles' }) }}" class="usage-card">
                     <h3 class="usage-card__title">Champions <span class="accent--pink">solo</span></h3>
                     <div class="usage-card__mons">
                         <img src="{{ asset('images/usage/solo-mimiqui.png') }}" alt="Mimiqui" style="left:223px; top:9px; width:73px; height:92px;">

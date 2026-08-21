@@ -10,122 +10,36 @@
             <div class="section__header-row" style="margin-bottom: 24px;">
                 <div>
                     <h1 class="section__title">Usage des Pokémons</h1>
-                    <p class="section__subtitle">Tier des usages des Pokémons de la méta actuelle — classé par numéro de Pokédex</p>
+                    <p class="section__subtitle">Tier des usages des Pokémons de la méta actuelle</p>
                 </div>
                 <div class="format-switch">
-                    <a href="{{ path('app_usage', { pokemon: selected ? selected.slug : null, format: 'Doubles' }) }}" class="format-switch__option{{ format == 'Doubles' ? ' is-active' : '' }}">Doubles</a>
-                    <a href="{{ path('app_usage', { pokemon: selected ? selected.slug : null, format: 'Singles' }) }}" class="format-switch__option{{ format == 'Singles' ? ' is-active' : '' }}">Singles</a>
+                    <a href="{{ path('app_usage', { pokemon: selected ? selected.slug : null, format: 'Doubles' }) }}" class="format-switch__option{{ format == 'Doubles' ? ' is-active' : '' }}">Champions Duo</a>
+                    <a href="{{ path('app_usage', { pokemon: selected ? selected.slug : null, format: 'Singles' }) }}" class="format-switch__option{{ format == 'Singles' ? ' is-active' : '' }}">Champions Solo</a>
                 </div>
             </div>
 
-            <div class="usage-layout">
-                <div class="usage-list">
+            <div class="usage-layout" data-controller="usage">
+                <div class="usage-list" data-usage-target="list">
                     {% for pokemon in allPokemon %}
                         <a href="{{ path('app_usage', { pokemon: pokemon.slug, format: format }) }}"
-                           class="usage-row{{ selected and selected.slug == pokemon.slug ? ' is-active' : '' }}">
-                            <span class="usage-row__badge">{{ pokemon.dexNumber ?? '?' }}</span>
+                           class="usage-row{{ selected and selected.slug == pokemon.slug ? ' is-active' : '' }}"
+                           data-action="click->usage#selectPokemon">
+                            <span class="usage-row__badge">{{ pokemon.rang ?? pokemon.dexNumber ?? '?' }}</span>
                             <img class="usage-row__sprite" src="{{ champions_asset(pokemon.summary.sprite) }}" alt="{{ pokemon.name }}" loading="lazy">
-                            <span class="usage-row__name">{{ pokemon.name }}</span>
+                            <span class="usage-row__name">{{ pokemon_name_fr(pokemon.name, pokemon.showdownId) }}</span>
                             <span class="usage-row__types">
                                 {% for type in pokemon.summary.types %}
                                     <img src="{{ asset(type_icon(type)) }}" alt="{{ type_name_fr(type) }}" title="{{ type_name_fr(type) }}">
                                 {% endfor %}
                             </span>
+                            <span class="usage-row__view-btn">Voir</span>
                         </a>
                     {% endfor %}
                 </div>
 
-                {% if selected %}
-                    <div class="usage-detail">
-                        <div class="usage-detail__identity">
-                            <h2 class="usage-detail__name">{{ selected.name }}</h2>
-
-                            <div class="usage-detail__top-row">
-                                <img class="usage-detail__sprite" src="{{ champions_asset(selected.summary.sprite) }}" alt="{{ selected.name }}">
-
-                                <div class="usage-detail__info">
-                                    <p class="info-row"><strong>Type :</strong></p>
-                                    <div class="type-pills">
-                                        {% for type in selected.summary.types %}
-                                            <span class="type-pill">
-                                                <img src="{{ asset(type_icon(type)) }}" alt="">
-                                                {{ type_name_fr(type)|upper }}
-                                            </span>
-                                        {% endfor %}
-                                    </div>
-
-                                    <p class="info-row"><strong>Talent{{ selected.summary.primary.abilities|split('|')|length > 1 ? 's' : '' }} :</strong></p>
-                                    <ul class="abilities-list">
-                                        {% for ability in selected.summary.primary.abilities|split('|') %}
-                                            <li>{{ ability }}</li>
-                                        {% endfor %}
-                                    </ul>
-
-                                    {% if selected.summary.forms|length > 1 %}
-                                        <p class="info-row"><strong>Formes :</strong></p>
-                                        <div class="forms-row">
-                                            {% for form in selected.summary.forms %}
-                                                <img src="{{ champions_asset(form.image_path|replace({'\\\\': '/'})) }}" alt="{{ form.form_name }}" title="{{ form.form_name }}">
-                                            {% endfor %}
-                                        </div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="base-stats">
-                                    <h3>Statistiques :</h3>
-                                    {% if baseStats %}
-                                        {% for label, key in { 'PV': 'hp', 'Attaque': 'attack', 'Défense': 'defense', 'Atq Spé': 'sp_attack', 'Déf Spé': 'sp_defense', 'Vitesse': 'speed' } %}
-                                            <div class="base-stat-row">
-                                                <span class="base-stat-row__label">{{ label }}</span>
-                                                <span class="base-stat-row__value">{{ baseStats[key] }}</span>
-                                                <div class="base-stat-row__track">
-                                                    <div class="base-stat-row__fill" style="width: {{ (baseStats[key] / 255 * 100)|number_format(0) }}%; background-color: {{ stat_color(baseStats[key]) }};"></div>
-                                                </div>
-                                            </div>
-                                        {% endfor %}
-                                    {% else %}
-                                        <p class="usage-detail__abilities">Stats de base indisponibles pour ce Pokémon.</p>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="usage-detail__usage">
-                            <h3>Statistiques d'utilisation ({{ format }})</h3>
-
-                            {% for category, title in { 'move': 'Capacités', 'held_item': 'Objets tenus', 'ability': 'Talents', 'teammate': 'Coéquipiers', 'stat_alignment': 'Natures' } %}
-                                {% if rowsByCategory[category] is defined %}
-                                    <div class="usage-stat-block">
-                                        <h4>{{ title }}</h4>
-                                        <ul class="usage-stat-list">
-                                            {% for row in rowsByCategory[category] %}
-                                                <li>
-                                                    <span>{{ row.name }}</span>
-                                                    {% if row.stat_up %}<span class="usage-stat-list__meta">{{ row.stat_up }} ↑ / {{ row.stat_down }} ↓</span>{% endif %}
-                                                    {% if row.percentage %}<span class="usage-stat-list__pct">{{ row.percentage }}</span>{% endif %}
-                                                </li>
-                                            {% endfor %}
-                                        </ul>
-                                    </div>
-                                {% endif %}
-                            {% endfor %}
-
-                            {% if rowsByCategory['stat_points'] is defined %}
-                                <div class="usage-stat-block">
-                                    <h4>Répartitions d'EV les plus utilisées</h4>
-                                    <ul class="usage-stat-list">
-                                        {% for row in rowsByCategory['stat_points'] %}
-                                            <li>
-                                                <span>PV {{ row.hp_points }} / Atq {{ row.attack_points }} / Déf {{ row.defense_points }} / AtqSpé {{ row.sp_atk_points }} / DéfSpé {{ row.sp_def_points }} / Vit {{ row.speed_points }}</span>
-                                                <span class="usage-stat-list__pct">{{ row.percentage }}</span>
-                                            </li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                {% endif %}
+                <div data-usage-target="detail">
+                    {% include 'home/fragments/usage_detail.html.twig' %}
+                </div>
             </div>
         </section>
     </main>

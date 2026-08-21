@@ -46,6 +46,45 @@ class PokeApiClient
             return null;
         }
 
+        return $this->statsFromApiData($pokemon);
+    }
+
+    /**
+     * Real base stats/types/abilities for a Pokémon's mega form (works for official games'
+     * megas AND every Champions-exclusive méga-gemme except Trevenant and Empoleon, which
+     * PokeAPI has no mega data for at all — see AdminClassementController's note, or just
+     * getMegaForm() returning null for those two).
+     *
+     * @param string $formName the champions API's form_name, e.g. "Mega Charizard X", to disambiguate X/Y forms
+     *
+     * @return array{stats: array{hp:int, attack:int, defense:int, sp_attack:int, sp_defense:int, speed:int, total:int}, types: array<string>, abilities: array<int, array{slug: string, name: string, isHidden: bool}>}|null
+     */
+    public function getMegaForm(string $displayName, string $showdownId, string $formName): ?array
+    {
+        $baseSlug = $this->pokedexResolver->resolveSlug($displayName, $showdownId);
+        if (null === $baseSlug) {
+            return null;
+        }
+
+        $pokemon = $this->fetchPokemon($this->buildMegaSlug($baseSlug, $formName));
+        if (null === $pokemon) {
+            return null;
+        }
+
+        $types = array_map(static fn (array $entry) => ucfirst($entry['type']['name']), $pokemon['types'] ?? []);
+
+        return [
+            'stats' => $this->statsFromApiData($pokemon),
+            'types' => $types,
+            'abilities' => $this->abilitiesFromApiData($pokemon),
+        ];
+    }
+
+    /**
+     * @return array{hp:int, attack:int, defense:int, sp_attack:int, sp_defense:int, speed:int, total:int}
+     */
+    private function statsFromApiData(array $pokemon): array
+    {
         $stats = ['hp' => 0, 'attack' => 0, 'defense' => 0, 'sp_attack' => 0, 'sp_defense' => 0, 'speed' => 0];
         foreach ($pokemon['stats'] ?? [] as $entry) {
             $key = self::STAT_KEY_MAP[$entry['stat']['name']] ?? null;
@@ -56,6 +95,23 @@ class PokeApiClient
         $stats['total'] = array_sum($stats);
 
         return $stats;
+    }
+
+    /**
+     * PokeAPI's mega slugs are "{base}-mega", except Charizard/Mewtwo-style X/Y forms
+     * ("{base}-mega-x"/"-y") — disambiguated from the champions API's own form_name text.
+     */
+    private function buildMegaSlug(string $baseSlug, string $formName): string
+    {
+        $upper = strtoupper(trim($formName));
+        if (str_ends_with($upper, ' X')) {
+            return $baseSlug.'-mega-x';
+        }
+        if (str_ends_with($upper, ' Y')) {
+            return $baseSlug.'-mega-y';
+        }
+
+        return $baseSlug.'-mega';
     }
 
     /**
@@ -71,6 +127,14 @@ class PokeApiClient
             return [];
         }
 
+        return $this->abilitiesFromApiData($pokemon);
+    }
+
+    /**
+     * @return array<int, array{slug: string, name: string, isHidden: bool}>
+     */
+    private function abilitiesFromApiData(array $pokemon): array
+    {
         $abilities = [];
         foreach ($pokemon['abilities'] ?? [] as $entry) {
             $abilitySlug = $entry['ability']['name'];
@@ -90,7 +154,7 @@ class PokeApiClient
      * with power/pp/accuracy/type/category and French name — cached long-term
      * since a movepool essentially never changes.
      *
-     * @return array<int, array{slug:string, name:string, type:string, damageClass:string, power:?int, pp:?int, accuracy:?int}>
+     * @return array<int, array{slug:string, name:string, type:string, damageClass:string, power:?int, pp:?int, accuracy:?int, isSpread:bool}>
      */
     public function getLearnableMoves(string $displayName, string $showdownId): array
     {
@@ -99,7 +163,7 @@ class PokeApiClient
             return [];
         }
 
-        return $this->cache->get('pokeapi_learnable_moves_'.$slug, function (ItemInterface $item) use ($slug) {
+        return $this->cache->get('pokeapi_learnable_moves_v2_'.$slug, function (ItemInterface $item) use ($slug) {
             $item->expiresAfter(604800); // a movepool doesn't change week to week
 
             $pokemon = $this->fetchPokemon($slug);
@@ -128,6 +192,12 @@ class PokeApiClient
                 if (null === $detail) {
                     continue;
                 }
+                // moves that hit every foe (or every other Pokémon) at once take the
+                // doubles "spread" damage penalty — Champions/VGC is doubles-only,
+                // so the calculator applies it whenever a move can do this
+                $targetName = $detail['target']['name'] ?? null;
+                $isSpread = \in_array($targetName, ['all-opponents', 'all-other-pokemon'], true);
+
                 $moves[] = [
                     'slug' => $moveSlug,
                     'name' => $this->frenchName($detail) ?? $moveSlug,
@@ -136,6 +206,7 @@ class PokeApiClient
                     'power' => $detail['power'],
                     'pp' => $detail['pp'],
                     'accuracy' => $detail['accuracy'],
+                    'isSpread' => $isSpread,
                 ];
             }
 
@@ -210,6 +281,113 @@ class PokeApiClient
 
             return $items;
         });
+    }
+
+    /**
+     * The Pokémon's real French name (e.g. "Florizarre" for "Venusaur"), resolved
+     * via PokeAPI's species data. Falls back to the English display name if the
+     * species can't be matched or PokeAPI has no French translation for it.
+     */
+    public function getPokemonNameFr(string $displayName, string $showdownId): string
+    {
+        $slug = $this->pokedexResolver->resolveSlug($displayName, $showdownId);
+        if (null === $slug) {
+            return $displayName;
+        }
+
+        $species = $this->fetchNamedResource('pokemon-species', $slug);
+        if (null === $species) {
+            return $displayName;
+        }
+
+        return $this->frenchName($species) ?? $displayName;
+    }
+
+    /**
+     * French name for a move given its English display name (as returned by
+     * championsbattledata.com's usage stats, e.g. "Rock Slide"). Falls back to
+     * the English name if it can't be matched on PokeAPI.
+     */
+    public function getMoveNameFr(string $englishName): string
+    {
+        $detail = $this->fetchNamedResource('move', $this->slugifyName($englishName));
+
+        return null !== $detail ? ($this->frenchName($detail) ?? $englishName) : $englishName;
+    }
+
+    /**
+     * French name for a held item given its English display name (e.g. "Life Orb").
+     * Falls back to the English name if it can't be matched on PokeAPI.
+     */
+    /**
+     * Champions-exclusive méga-gemmes (mega stones with no official PokeAPI entry).
+     * Maps championsbattledata.com's raw display name to the site's own French item name.
+     */
+    private const CHAMPIONS_MEGA_GEMS_FR = [
+        'staraptite' => 'Étouraptorite',
+        'dragoninite' => 'Dracolossite',
+        'feraligite' => 'Aligatueurite',
+        'mega niumite' => 'Méganiumite',
+        'meganiumite' => 'Méganiumite',
+        'pyroarite' => 'Néméliosite',
+        'scovillainite' => 'Scovilainite',
+        'skarmorite' => 'Airmurite',
+        'starminite' => 'Starossite',
+        'crabominite' => 'Crabominablite',
+        'chesnaughtite' => 'Blindépiquite',
+        'chimechite' => 'Éokite',
+        'clefablite' => 'Mélodelfite',
+        'delphoxite' => 'Goupelinite',
+        'excadrite' => 'Minotaupite',
+        'froslassite' => 'Momartikite',
+        'glimmoranite' => 'Floréclatite',
+        'golurkite' => 'Golemastokite',
+        'malamarite' => 'Sepiatrocite',
+        'meowsticite' => 'Mistigrixite',
+        'scolipite' => 'Brutapodite',
+        'barbaracite' => 'Golgopathite',
+        'drampanite' => 'Draïeulite',
+        'eelektrossite' => 'Ohmassacrite',
+        'emboarite' => 'Roitiflamite',
+        'falinksite' => 'Hexadronite',
+        'hawluchanite' => 'Brutalibrite',
+        'scraftinite' => 'Baggaïdite',
+        'dragalgite' => 'Kravarekite',
+        'greninjite' => 'Amphinolite',
+        'raichunite x' => 'Raichuïte X',
+        'raichunite y' => 'Raichuïte Y',
+    ];
+
+    public function getItemNameFr(string $englishName): string
+    {
+        $megaGem = self::CHAMPIONS_MEGA_GEMS_FR[strtolower(trim($englishName))] ?? null;
+        if (null !== $megaGem) {
+            return $megaGem;
+        }
+
+        $detail = $this->fetchNamedResource('item', $this->slugifyName($englishName));
+
+        return null !== $detail ? ($this->frenchName($detail) ?? $englishName) : $englishName;
+    }
+
+    /**
+     * French name for an ability given its English display name (e.g. "Sand Veil").
+     * Falls back to the English name if it can't be matched on PokeAPI.
+     */
+    public function getAbilityNameFr(string $englishName): string
+    {
+        $detail = $this->fetchNamedResource('ability', $this->slugifyName($englishName));
+
+        return null !== $detail ? ($this->frenchName($detail) ?? $englishName) : $englishName;
+    }
+
+    private function slugifyName(string $name): string
+    {
+        $name = strtolower(trim($name));
+        $name = str_replace(["'", '’', '.'], '', $name);
+        $name = preg_replace('/[^a-z0-9]+/', '-', $name);
+
+        return trim($name, '-');
     }
 
     private function frenchName(array $resource): ?string

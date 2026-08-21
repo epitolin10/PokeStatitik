@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\Equipe;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
@@ -54,7 +55,54 @@ class TeamDraftManager
             'idEquipePokemonChampions' => '',
             'tiersId' => null,
             'slots' => array_fill(1, 6, null),
+            'editingEquipeId' => null,
         ];
+    }
+
+    /**
+     * Loads an already-published Equipe into the draft so the builder UI can be reused to edit it.
+     * The draft remembers the source Equipe's id (see getEditingEquipeId()) so publish() knows to
+     * update it in place instead of creating a new team.
+     */
+    public function loadFromEquipe(Equipe $equipe): void
+    {
+        $draft = $this->blank();
+        $draft['titre'] = $equipe->getTitre() ?? '';
+        $draft['description'] = $equipe->getDescription();
+        $draft['idEquipePokemonChampions'] = $equipe->getIdEquipePokemonChampions();
+        $draft['tiersId'] = $equipe->getTiers()?->getId();
+        $draft['editingEquipeId'] = $equipe->getId();
+
+        foreach ($equipe->getBuildPokemons() as $build) {
+            $position = $build->getPosition();
+            if ($position < 1 || $position > 6) {
+                continue;
+            }
+
+            $draft['slots'][$position] = array_merge(self::EMPTY_SLOT, [
+                'pokemonUrl' => $build->getPokemonUrl(),
+                'objet' => $build->getObjet(),
+                'capacite1' => $build->getCapacite1(),
+                'capacite2' => $build->getCapacite2(),
+                'capacite3' => $build->getCapacite3(),
+                'capacite4' => $build->getCapacite4(),
+                'nature' => $build->getNature(),
+                'talent' => $build->getTalent(),
+                'ivPv' => $build->getIvPv(),
+                'ivAtq' => $build->getIvAtq(),
+                'ivDef' => $build->getIvDef(),
+                'ivAtqSpe' => $build->getIvAtqSpe(),
+                'ivDefSpe' => $build->getIvDefSpe(),
+                'ivVitesse' => $build->getIvVitesse(),
+            ]);
+        }
+
+        $this->save($draft);
+    }
+
+    public function getEditingEquipeId(): ?int
+    {
+        return $this->get()['editingEquipeId'] ?? null;
     }
 
     public function save(array $draft): void

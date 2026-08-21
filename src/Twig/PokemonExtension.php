@@ -2,12 +2,18 @@
 
 namespace App\Twig;
 
+use App\Service\NatureCatalog;
+use App\Service\PokeApiClient;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 
 class PokemonExtension extends AbstractExtension
 {
+    public function __construct(private readonly PokeApiClient $pokeApi)
+    {
+    }
+
     /**
      * Base-stat quality tiers, as given by the site owner.
      * "Excellent" applies whenever a stat exceeds 150, regardless of the upper bound.
@@ -29,11 +35,6 @@ class PokemonExtension extends AbstractExtension
         'Steel' => 'Acier', 'Fairy' => 'Fée',
     ];
 
-    private const POKEMON_NAMES_FR = [
-        'Venusaur' => 'Florizarre',
-    ];
-    
-
     public function getFunctions(): array
     {
         return [
@@ -43,6 +44,10 @@ class PokemonExtension extends AbstractExtension
             new TwigFunction('champions_asset', [$this, 'championsAsset']),
             new TwigFunction('pokemon_name_fr', [$this, 'pokemonNameFr']),
             new TwigFunction('move_category_fr', [$this, 'moveCategoryFr']),
+            new TwigFunction('move_name_fr', [$this, 'moveNameFr']),
+            new TwigFunction('item_name_fr', [$this, 'itemNameFr']),
+            new TwigFunction('ability_name_fr', [$this, 'abilityNameFr']),
+            new TwigFunction('nature_name_fr', [NatureCatalog::class, 'nameFr']),
         ];
     }
 
@@ -84,9 +89,24 @@ class PokemonExtension extends AbstractExtension
     {
         return self::TYPE_NAMES_FR[$englishType] ?? $englishType;
     }
-    public function pokemonNameFr(string $englishpokemon): string
+    public function pokemonNameFr(string $englishPokemon, string $showdownId = ''): string
     {
-        return self::POKEMON_NAMES_FR[$englishpokemon] ?? $englishpokemon;
+        return $this->pokeApi->getPokemonNameFr($englishPokemon, $showdownId);
+    }
+
+    public function moveNameFr(string $englishMove): string
+    {
+        return $this->pokeApi->getMoveNameFr($englishMove);
+    }
+
+    public function itemNameFr(string $englishItem): string
+    {
+        return $this->pokeApi->getItemNameFr($englishItem);
+    }
+
+    public function abilityNameFr(string $englishAbility): string
+    {
+        return $this->pokeApi->getAbilityNameFr($englishAbility);
     }
 
     public function typeIcon(string $englishType): string

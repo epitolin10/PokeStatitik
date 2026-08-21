@@ -1,12 +1,12 @@
 <div class="modal-card" data-modal-target="card">
     <a href="{{ path('app_team_builder') }}" class="modal-card__close">✕</a>
     <h1 class="modal-card__title">Entrainement du Pokémon</h1>
-    <p class="modal-card__subtitle">{{ pokemon_name_fr(pokemon.name) }}</p>
+    <p class="modal-card__subtitle">{{ pokemon_name_fr(pokemon.name, pokemon.showdownId) }}</p>
 
     <div class="slot-config">
         <div class="slot-config__identity">
             <img class="slot-config__sprite" src="{{ champions_asset(pokemon.summary.sprite) }}" alt="{{ pokemon.name }}">
-            <h2 class="usage-detail__name">{{ pokemon_name_fr(pokemon.name) }}</h2>
+            <h2 class="usage-detail__name">{{ pokemon_name_fr(pokemon.name, pokemon.showdownId) }}</h2>
             <div class="type-pills">
                 {% for type in pokemon.summary.types %}
                     <span class="type-pill"><img src="{{ asset(type_icon(type)) }}" alt="">{{ type_name_fr(type)|upper }}</span>

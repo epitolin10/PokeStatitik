@@ -17,7 +17,7 @@
                     <input type="hidden" name="slug" value="{{ pokemon.slug }}">
                     <img class="data-table__sprite" src="{{ champions_asset(pokemon.summary.sprite) }}" alt="" loading="lazy">
                     <div>
-                        <div class="data-table__name">{{ pokemon_name_fr(pokemon.name) }}</div>
+                        <div class="data-table__name">{{ pokemon_name_fr(pokemon.name, pokemon.showdownId) }}</div>
                         <div class="data-table__meta">
                             {% for type in pokemon.summary.types %}
                                 <span class="type-pill"><img src="{{ asset(type_icon(type)) }}" alt="">{{ type_name_fr(type)|upper }}</span>
