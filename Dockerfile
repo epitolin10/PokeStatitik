@@ -31,33 +31,31 @@ COPY docker/apache/vhost.conf /etc/apache2/sites-available/000-default.conf
 
 WORKDIR /var/www/html
 
-ENV APP_ENV=dev \
+ENV APP_ENV=prod \
     COMPOSER_ALLOW_SUPERUSER=1
 
 # Install PHP dependencies first (better layer caching)
 COPY composer.json composer.lock symfony.lock ./
-RUN composer install --no-scripts --no-autoloader --no-interaction --prefer-dist
+RUN composer install --no-dev --no-scripts --no-autoloader --no-interaction --prefer-dist
 
 # Copy the rest of the application
 COPY . .
 
-RUN composer dump-autoload --optimize --classmap-authoritative
+RUN composer dump-autoload --optimize --classmap-authoritative --no-dev
 
 # Booting the kernel to build assets requires the container to compile, which
 # needs *some* value for these env vars. The real values are supplied by
 # Render at runtime and override these build-time placeholders.
 ENV APP_SECRET=build_time_placeholder \
-    DATABASE_URL="postgresql://app:app@127.0.0.1:5432/app?serverVersion=15.0.0&charset=utf8" \
     MAILER_DSN=null://null \
     MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0 \
-    DEFAULT_URI=http://localhost \
-    APP_DEBUG=1
+    DEFAULT_URI=https://pokestatitik.onrender.com/ \
+    APP_DEBUG=0
 
 RUN { \
-        echo 'APP_ENV=dev'; \
-        echo 'APP_DEBUG=1'; \
+        echo 'APP_ENV=prod'; \
+        echo 'APP_DEBUG=0'; \
         echo 'APP_SECRET=build_time_placeholder'; \
-        echo 'DATABASE_URL=postgresql://app:app@127.0.0.1:5432/app?serverVersion=15.0.0&charset=utf8'; \
         echo 'MAILER_DSN=null://null'; \
         echo 'MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0'; \
         echo 'DEFAULT_URI=http://localhost'; \

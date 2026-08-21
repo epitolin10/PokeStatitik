@@ -7,9 +7,7 @@ services:
     healthCheckPath: /
     envVars:
       - key: APP_ENV
-        value: dev
-      - key: APP_DEBUG
-        value: 1
+        value: prod
       - key: APP_SECRET
         generateValue: true
       # Set manually in the Render dashboard: your PostgreSQL connection
