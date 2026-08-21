@@ -18,8 +18,8 @@ php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migratio
 # Cache needs env-dependent config (DATABASE_URL, APP_SECRET, ...) which is
 # only available at runtime on Render, so it's warmed here instead of at
 # build time.
-php bin/console cache:clear --env=prod --no-debug
-php bin/console cache:warmup --env=prod --no-debug
+php bin/console cache:clear --env="${APP_ENV:-prod}"
+php bin/console cache:warmup --env="${APP_ENV:-prod}"
 
 # cache:clear/warmup above run as root; hand the resulting files back to
 # www-data so Apache/PHP can write logs and cache during requests.
