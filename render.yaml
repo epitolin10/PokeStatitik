@@ -10,9 +10,9 @@ services:
         value: prod
       - key: APP_SECRET
         generateValue: true
-      # Set manually in the Render dashboard: your Supabase Session Pooler
-      # connection string, e.g.
-      # postgresql://postgres.<project-ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres?serverVersion=15&charset=utf8&sslmode=require
+      # Set manually in the Render dashboard: your PostgreSQL connection
+      # string, e.g.
+      # postgresql://user:password@host:5432/database?serverVersion=15.0.0&charset=utf8&sslmode=require
       - key: DATABASE_URL
         sync: false
       - key: MAILER_DSN

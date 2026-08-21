@@ -22,20 +22,20 @@ final class Version20260819141929 extends AbstractMigration
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql(<<<'SQL'
             CREATE TABLE commentaire (
-              id INT AUTO_INCREMENT NOT NULL,
-              commentaire LONGTEXT NOT NULL,
+              id SERIAL NOT NULL,
+              commentaire TEXT NOT NULL,
               id_compte INT NOT NULL,
               id_equipe INT NOT NULL,
               PRIMARY KEY (id)
-            ) DEFAULT CHARACTER SET utf8mb4
+            )
         SQL);
         $this->addSql(<<<'SQL'
-            CREATE TABLE `like` (
-              id INT AUTO_INCREMENT NOT NULL,
+            CREATE TABLE "like" (
+              id SERIAL NOT NULL,
               id_equipe INT NOT NULL,
               id_compte INT NOT NULL,
               PRIMARY KEY (id)
-            ) DEFAULT CHARACTER SET utf8mb4
+            )
         SQL);
     }
 
@@ -43,6 +43,6 @@ final class Version20260819141929 extends AbstractMigration
     {
         // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('DROP TABLE commentaire');
-        $this->addSql('DROP TABLE `like`');
+        $this->addSql('DROP TABLE "like"');
     }
 }
