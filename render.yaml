@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: pokestatitik
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: APP_ENV
+        value: prod
+      - key: APP_SECRET
+        generateValue: true
+      # Set manually in the Render dashboard: your Supabase Session Pooler
+      # connection string, e.g.
+      # postgresql://postgres.<project-ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres?serverVersion=15&charset=utf8&sslmode=require
+      - key: DATABASE_URL
+        sync: false
+      - key: MAILER_DSN
+        value: null://null
+      - key: MESSENGER_TRANSPORT_DSN
+        value: doctrine://default?auto_setup=0

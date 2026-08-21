@@ -1,0 +1,17 @@
+.git
+.gitignore
+.claude
+.env
+.env.dev
+.env.test
+var
+vendor
+assets/vendor
+public/assets
+public/uploads
+tests
+docs
+compose.yaml
+compose.override.yaml
+Dockerfile
+.dockerignore
