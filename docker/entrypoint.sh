@@ -12,6 +12,14 @@ if [ -n "${DATABASE_URL:-}" ]; then
     export DATABASE_URL
 fi
 
+case "${DATABASE_URL:-}" in
+    *"@127.0.0.1:"*|*"@localhost:"*)
+        echo "ERROR: DATABASE_URL points to localhost inside the Render container."
+        echo "Set DATABASE_URL in the Render dashboard to your real PostgreSQL URL."
+        exit 1
+        ;;
+esac
+
 # Apply pending Doctrine migrations (no-op if none are configured).
 php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
 
