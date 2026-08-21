@@ -47,7 +47,6 @@ RUN composer dump-autoload --optimize --classmap-authoritative --no-dev
 # needs *some* value for these env vars. The real values are supplied by
 # Render at runtime and override these build-time placeholders.
 ENV APP_SECRET=build_time_placeholder \
-    DATABASE_URL="postgresql://app:app@127.0.0.1:5432/app?serverVersion=15.0.0&charset=utf8" \
     MAILER_DSN=null://null \
     MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0 \
     DEFAULT_URI=https://pokestatitik.onrender.com/ \
@@ -57,15 +56,14 @@ RUN { \
         echo 'APP_ENV=prod'; \
         echo 'APP_DEBUG=0'; \
         echo 'APP_SECRET=build_time_placeholder'; \
-        echo 'DATABASE_URL=postgresql://app:app@127.0.0.1:5432/app?serverVersion=15.0.0&charset=utf8'; \
         echo 'MAILER_DSN=null://null'; \
         echo 'MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0'; \
         echo 'DEFAULT_URI=http://localhost'; \
     } > .env
 
 # Pre-build front-end assets served by the AssetMapper
-RUN php bin/console importmap:install --no-interaction \
-    && php bin/console asset-map:compile --no-interaction
+RUN DATABASE_URL="postgresql://app:app@127.0.0.1:5432/app?serverVersion=15.0.0&charset=utf8" php bin/console importmap:install --no-interaction \
+    && DATABASE_URL="postgresql://app:app@127.0.0.1:5432/app?serverVersion=15.0.0&charset=utf8" php bin/console asset-map:compile --no-interaction
 
 RUN mkdir -p var/cache var/log public/uploads \
     && chown -R www-data:www-data var public/uploads

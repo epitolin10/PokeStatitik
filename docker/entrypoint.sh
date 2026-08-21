@@ -12,6 +12,12 @@ if [ -n "${DATABASE_URL:-}" ]; then
     export DATABASE_URL
 fi
 
+if [ -z "${DATABASE_URL:-}" ]; then
+    echo "ERROR: DATABASE_URL is not set."
+    echo "Set DATABASE_URL in the Render dashboard to your real PostgreSQL URL."
+    exit 1
+fi
+
 case "${DATABASE_URL:-}" in
     *"@127.0.0.1:"*|*"@localhost:"*)
         echo "ERROR: DATABASE_URL points to localhost inside the Render container."
